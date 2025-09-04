@@ -1846,7 +1846,7 @@ function gi_render_grant_card_grid($grant) {
             <?php if ($grant['thumbnail']) : ?>
                 <img src="<?php echo gi_safe_url($grant['thumbnail']); ?>" alt="<?php echo gi_safe_attr($grant['title']); ?>" class="w-full h-48 object-cover">
             <?php else : ?>
-                <div class="w-full h-48 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                <div class="w-full h-48 bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
                     <i class="fas fa-coins text-4xl text-white"></i>
                 </div>
             <?php endif; ?>
@@ -1873,7 +1873,7 @@ function gi_render_grant_card_grid($grant) {
                 <?php endif; ?>
                 
                 <?php if ($grant['main_category']) : ?>
-                    <span class="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full mb-1">
+                    <span class="inline-block px-2 py-1 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full mb-1">
                         <?php echo gi_safe_escape($grant['main_category']); ?>
                     </span>
                 <?php endif; ?>
@@ -1886,20 +1886,20 @@ function gi_render_grant_card_grid($grant) {
                             </span>
                         <?php endforeach; ?>
                     </div>
-                    <button class="text-xs text-blue-600 hover:text-blue-800 mt-1 show-more-categories">
+                    <button class="text-xs text-emerald-600 hover:text-emerald-800 mt-1 show-more-categories">
                         関連カテゴリを表示
                     </button>
                 <?php endif; ?>
             </div>
             
             <!-- タイトル -->
-            <h3 class="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 hover:text-blue-600 transition-colors">
+            <h3 class="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 hover:text-emerald-600 transition-colors">
                 <a href="<?php echo gi_safe_url($grant['permalink']); ?>"><?php echo gi_safe_escape($grant['title']); ?></a>
             </h3>
             
             <!-- 金額 -->
             <div class="flex items-center gap-2 mb-3">
-                <div class="text-2xl font-bold text-blue-600">
+                <div class="text-2xl font-bold text-emerald-600">
                     <?php echo $grant['amount']; ?>
                 </div>
                 <span class="text-sm text-gray-500">万円</span>
@@ -1930,7 +1930,7 @@ function gi_render_grant_card_grid($grant) {
             <!-- アクションボタン -->
             <div class="flex gap-2">
                 <a href="<?php echo gi_safe_url($grant['permalink']); ?>" 
-                   class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200">
+                   class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-center py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200">
                     詳細を見る
                 </a>
                 <button class="px-3 py-2 border border-gray-300 hover:border-gray-400 text-gray-600 hover:text-gray-700 rounded-lg transition-colors duration-200"
@@ -1957,7 +1957,7 @@ function gi_render_grant_card_list($grant) {
                 <?php if ($grant['thumbnail']) : ?>
                     <img src="<?php echo gi_safe_url($grant['thumbnail']); ?>" alt="<?php echo gi_safe_attr($grant['title']); ?>" class="w-full h-32 lg:h-24 object-cover rounded-lg">
                 <?php else : ?>
-                    <div class="w-full h-32 lg:h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <div class="w-full h-32 lg:h-24 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
                         <i class="fas fa-coins text-2xl text-white"></i>
                     </div>
                 <?php endif; ?>
@@ -1978,7 +1978,7 @@ function gi_render_grant_card_list($grant) {
                             <?php endif; ?>
                             
                             <?php if ($grant['main_category']) : ?>
-                                <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                                <span class="px-2 py-1 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full">
                                     <?php echo gi_safe_escape($grant['main_category']); ?>
                                 </span>
                             <?php endif; ?>
@@ -1990,7 +1990,7 @@ function gi_render_grant_card_list($grant) {
                         </div>
                         
                         <!-- タイトル -->
-                        <h3 class="text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2 hover:text-emerald-600 transition-colors">
                             <a href="<?php echo gi_safe_url($grant['permalink']); ?>"><?php echo gi_safe_escape($grant['title']); ?></a>
                         </h3>
                         
@@ -2021,7 +2021,7 @@ function gi_render_grant_card_list($grant) {
                     <div class="lg:w-48 lg:text-right">
                         <!-- 金額 -->
                         <div class="mb-4">
-                            <div class="text-3xl font-bold text-blue-600">
+                            <div class="text-3xl font-bold text-emerald-600">
                                 <?php echo $grant['amount']; ?>
                                 <span class="text-lg text-gray-500">万円</span>
                             </div>
@@ -2030,7 +2030,7 @@ function gi_render_grant_card_list($grant) {
                         <!-- ボタン -->
                         <div class="flex lg:flex-col gap-2">
                             <a href="<?php echo gi_safe_url($grant['permalink']); ?>" 
-                               class="flex-1 lg:flex-none bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-4 rounded-lg font-medium transition-colors duration-200">
+                               class="flex-1 lg:flex-none bg-emerald-600 hover:bg-emerald-700 text-white text-center py-2 px-4 rounded-lg font-medium transition-colors duration-200">
                                 詳細を見る
                             </a>
                             <button class="px-3 py-2 border border-gray-300 hover:border-gray-400 text-gray-600 hover:text-gray-700 rounded-lg transition-colors duration-200"
