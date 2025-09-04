@@ -31,7 +31,7 @@ get_header(); ?>
                 <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 animate-fade-in-up">
                     助成金・補助金一覧
                 </h1>
-                <p class="text-xl md:text-2xl text-blue-100 mb-8 animate-fade-in-up animation-delay-200">
+                <p class="text-xl md:text-2xl text-emerald-100 mb-8 animate-fade-in-up animation-delay-200">
                     全国の助成金・補助金情報を都道府県別に検索
                 </p>
                 
@@ -56,19 +56,19 @@ get_header(); ?>
                         <div class="text-3xl md:text-4xl font-bold text-yellow-300">
                             <?php echo gi_safe_number_format($total_grants); ?>
                         </div>
-                        <div class="text-sm md:text-base text-blue-100">件</div>
+                        <div class="text-sm md:text-base text-emerald-100">件</div>
                     </div>
                     <div class="text-center">
                         <div class="text-3xl md:text-4xl font-bold text-green-300">
                             <?php echo gi_safe_number_format(count($active_grants)); ?>
                         </div>
-                        <div class="text-sm md:text-base text-blue-100">募集中</div>
+                        <div class="text-sm md:text-base text-emerald-100">募集中</div>
                     </div>
                     <div class="text-center">
                         <div class="text-3xl md:text-4xl font-bold text-orange-300">
                             <?php echo gi_safe_number_format($prefecture_count); ?>
                         </div>
-                        <div class="text-sm md:text-base text-blue-100">都道府県</div>
+                        <div class="text-sm md:text-base text-emerald-100">都道府県</div>
                     </div>
                 </div>
             </div>
@@ -83,11 +83,11 @@ get_header(); ?>
                 <div class="relative max-w-2xl mx-auto">
                     <input type="text" 
                            id="grant-search" 
-                           class="w-full px-6 py-4 text-lg border-2 border-gray-200 rounded-full focus:border-blue-500 focus:ring-4 focus:ring-blue-200 transition-all duration-300 pr-14"
+                           class="w-full px-6 py-4 text-lg border-2 border-gray-200 rounded-full focus:border-emerald-500 focus:ring-4 focus:ring-emerald-200 transition-all duration-300 pr-14"
                            placeholder="キーワードを入力してください（例：IT導入補助金、設備投資支援など）">
                     <button type="button" 
                             id="search-btn"
-                            class="absolute right-2 top-2 w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center transition-colors duration-200">
+                            class="absolute right-2 top-2 w-12 h-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full flex items-center justify-center transition-colors duration-200">
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
@@ -98,7 +98,7 @@ get_header(); ?>
                 <div class="flex items-center gap-4">
                     <!-- クイックフィルター -->
                     <div class="flex gap-2">
-                        <button class="quick-filter active px-4 py-2 rounded-full text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors" data-filter="all">すべて</button>
+                        <button class="quick-filter active px-4 py-2 rounded-full text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700 transition-colors" data-filter="all">すべて</button>
                         <button class="quick-filter px-4 py-2 rounded-full text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors" data-filter="active">募集中</button>
                         <button class="quick-filter px-4 py-2 rounded-full text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors" data-filter="upcoming">募集予定</button>
                         <button class="quick-filter px-4 py-2 rounded-full text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors" data-filter="national">全国対応</button>
@@ -107,7 +107,7 @@ get_header(); ?>
 
                 <div class="flex items-center gap-4">
                     <!-- 並び順 -->
-                    <select id="sort-order" class="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-blue-500">
+                    <select id="sort-order" class="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
                         <option value="date_desc">新着順</option>
                         <option value="date_asc">古い順</option>
                         <option value="amount_desc">金額が高い順</option>
@@ -118,7 +118,7 @@ get_header(); ?>
 
                     <!-- 表示切り替え -->
                     <div class="flex bg-gray-100 rounded-lg p-1">
-                        <button id="grid-view" class="view-toggle active flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 bg-white text-blue-600 shadow-sm">
+                        <button id="grid-view" class="view-toggle active flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 bg-white text-emerald-600 shadow-sm">
                             <i class="fas fa-th-large"></i>
                             <span class="hidden sm:inline">グリッド</span>
                         </button>
@@ -141,10 +141,10 @@ get_header(); ?>
                     <!-- フィルターヘッダー -->
                     <div class="flex items-center justify-between mb-6">
                         <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                            <i class="fas fa-filter text-blue-600"></i>
+                            <i class="fas fa-filter text-emerald-600"></i>
                             絞り込み検索
                         </h3>
-                        <button id="clear-filters" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                        <button id="clear-filters" class="text-sm text-emerald-600 hover:text-emerald-800 font-medium">
                             クリア
                         </button>
                     </div>
@@ -166,7 +166,7 @@ get_header(); ?>
                                 ?>
                                 <label class="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors group">
                                     <div class="flex items-center gap-3">
-                                        <input type="checkbox" name="prefecture[]" value="<?php echo gi_safe_attr($term->slug); ?>" class="prefecture-checkbox w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-emerald-500">
+                                        <input type="checkbox" name="prefecture[]" value="<?php echo gi_safe_attr($term->slug); ?>" class="prefecture-checkbox w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500">
                                         <span class="text-sm text-gray-700 group-hover:text-gray-900"><?php echo gi_safe_escape($term->name); ?></span>
                                     </div>
                                     <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full"><?php echo $term->count; ?></span>
@@ -194,7 +194,7 @@ get_header(); ?>
                                 ?>
                                 <label class="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors group">
                                     <div class="flex items-center gap-3">
-                                        <input type="checkbox" name="prefecture[]" value="<?php echo gi_safe_attr($prefecture->slug); ?>" class="prefecture-checkbox w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-emerald-500">
+                                        <input type="checkbox" name="prefecture[]" value="<?php echo gi_safe_attr($prefecture->slug); ?>" class="prefecture-checkbox w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500">
                                         <span class="text-sm text-gray-700 group-hover:text-gray-900"><?php echo gi_safe_escape($prefecture->name); ?></span>
                                     </div>
                                     <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full"><?php echo $prefecture->count; ?></span>
@@ -208,7 +208,7 @@ get_header(); ?>
 
                             <!-- ★★★ 都道府県展開ボタン（修正完了）★★★ -->
                             <?php if (!empty($all_prefectures) && count($all_prefectures) > 6) : ?>
-                            <button id="toggle-prefectures" class="w-full mt-3 py-2 px-4 text-sm text-blue-600 hover:text-blue-800 border border-blue-200 hover:border-blue-300 rounded-lg transition-colors flex items-center justify-center gap-2">
+                            <button id="toggle-prefectures" class="w-full mt-3 py-2 px-4 text-sm text-emerald-600 hover:text-emerald-800 border border-emerald-200 hover:border-emerald-300 rounded-lg transition-colors flex items-center justify-center gap-2">
                                 <span class="toggle-text">その他の都道府県を表示</span>
                                 <i class="fas fa-chevron-down toggle-icon transition-transform duration-200"></i>
                             </button>
@@ -246,7 +246,7 @@ get_header(); ?>
                             ?>
                             <label class="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors group">
                                 <div class="flex items-center gap-3">
-                                    <input type="checkbox" name="category[]" value="<?php echo gi_safe_attr($category->slug); ?>" class="category-checkbox w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-emerald-500">
+                                    <input type="checkbox" name="category[]" value="<?php echo gi_safe_attr($category->slug); ?>" class="category-checkbox w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500">
                                     <span class="text-sm text-gray-700 group-hover:text-gray-900"><?php echo gi_safe_escape($category->name); ?></span>
                                 </div>
                                 <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full"><?php echo $category->count; ?></span>
@@ -259,7 +259,7 @@ get_header(); ?>
                                 <?php foreach (array_slice($all_categories, 5) as $category) : ?>
                                 <label class="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors group">
                                     <div class="flex items-center gap-3">
-                                        <input type="checkbox" name="category[]" value="<?php echo gi_safe_attr($category->slug); ?>" class="category-checkbox w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-emerald-500">
+                                        <input type="checkbox" name="category[]" value="<?php echo gi_safe_attr($category->slug); ?>" class="category-checkbox w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500">
                                         <span class="text-sm text-gray-700 group-hover:text-gray-900"><?php echo gi_safe_escape($category->name); ?></span>
                                     </div>
                                     <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full"><?php echo $category->count; ?></span>
@@ -267,7 +267,7 @@ get_header(); ?>
                                 <?php endforeach; ?>
                             </div>
 
-                            <button id="toggle-categories" class="w-full mt-3 py-2 px-4 text-sm text-blue-600 hover:text-blue-800 border border-blue-200 hover:border-blue-300 rounded-lg transition-colors flex items-center justify-center gap-2">
+                            <button id="toggle-categories" class="w-full mt-3 py-2 px-4 text-sm text-emerald-600 hover:text-emerald-800 border border-emerald-200 hover:border-emerald-300 rounded-lg transition-colors flex items-center justify-center gap-2">
                                 <span class="toggle-text">その他のカテゴリを表示</span>
                                 <i class="fas fa-chevron-down toggle-icon transition-transform duration-200"></i>
                             </button>
@@ -284,23 +284,23 @@ get_header(); ?>
                         </h4>
                         <div class="space-y-2">
                             <label class="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                                <input type="radio" name="amount" value="" checked class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-emerald-500">
+                                <input type="radio" name="amount" value="" checked class="w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500">
                                 <span class="text-sm text-gray-700">すべて</span>
                             </label>
                             <label class="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                                <input type="radio" name="amount" value="0-100" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-emerald-500">
+                                <input type="radio" name="amount" value="0-100" class="w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500">
                                 <span class="text-sm text-gray-700">100万円以下</span>
                             </label>
                             <label class="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                                <input type="radio" name="amount" value="100-500" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-emerald-500">
+                                <input type="radio" name="amount" value="100-500" class="w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500">
                                 <span class="text-sm text-gray-700">100万円〜500万円</span>
                             </label>
                             <label class="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                                <input type="radio" name="amount" value="500-1000" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-emerald-500">
+                                <input type="radio" name="amount" value="500-1000" class="w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500">
                                 <span class="text-sm text-gray-700">500万円〜1000万円</span>
                             </label>
                             <label class="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                                <input type="radio" name="amount" value="1000+" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-emerald-500">
+                                <input type="radio" name="amount" value="1000+" class="w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500">
                                 <span class="text-sm text-gray-700">1000万円以上</span>
                             </label>
                         </div>
@@ -314,12 +314,12 @@ get_header(); ?>
                         </h4>
                         <div class="space-y-2">
                             <label class="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                                <input type="checkbox" name="status[]" value="active" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-emerald-500">
+                                <input type="checkbox" name="status[]" value="active" class="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500">
                                 <span class="text-sm text-gray-700">募集中</span>
                                 <span class="ml-auto w-3 h-3 bg-green-500 rounded-full"></span>
                             </label>
                             <label class="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                                <input type="checkbox" name="status[]" value="upcoming" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-emerald-500">
+                                <input type="checkbox" name="status[]" value="upcoming" class="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500">
                                 <span class="text-sm text-gray-700">募集予定</span>
                                 <span class="ml-auto w-3 h-3 bg-yellow-500 rounded-full"></span>
                             </label>
@@ -327,9 +327,9 @@ get_header(); ?>
                     </div>
 
                     <!-- フィルター統計表示 -->
-                    <div class="bg-blue-50 rounded-lg p-4 text-center">
-                        <div class="text-2xl font-bold text-blue-600" id="filter-stats-count">-</div>
-                        <div class="text-sm text-blue-700">該当する助成金</div>
+                    <div class="bg-emerald-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-emerald-600" id="filter-stats-count">-</div>
+                        <div class="text-sm text-emerald-700">該当する助成金</div>
                     </div>
                 </div>
             </aside>
@@ -337,14 +337,14 @@ get_header(); ?>
             <!-- メインコンテンツエリア -->
             <main class="flex-1">
                 <!-- 検索結果ヘッダー -->
-                <div id="results-header" class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div id="results-header" class="mb-6 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
                     <div class="flex items-center justify-between">
                         <div>
-                            <span id="results-count" class="text-lg font-semibold text-blue-900">検索中...</span>
-                            <span id="results-query" class="text-sm text-blue-700 ml-2"></span>
+                            <span id="results-count" class="text-lg font-semibold text-emerald-900">検索中...</span>
+                            <span id="results-query" class="text-sm text-emerald-700 ml-2"></span>
                         </div>
                         <div id="loading-spinner" class="hidden">
-                            <i class="fas fa-spinner fa-spin text-blue-600"></i>
+                            <i class="fas fa-spinner fa-spin text-emerald-600"></i>
                         </div>
                     </div>
                     <!-- 選択中のフィルター表示 -->
@@ -372,7 +372,7 @@ get_header(); ?>
                 <!-- ローディング表示 -->
                 <div id="main-loading" class="text-center py-12">
                     <div class="inline-flex items-center px-6 py-3 bg-white rounded-xl shadow-lg">
-                        <i class="fas fa-spinner fa-spin text-3xl text-blue-600 mr-4"></i>
+                        <i class="fas fa-spinner fa-spin text-3xl text-emerald-600 mr-4"></i>
                         <div>
                             <p class="text-lg font-medium text-gray-800 mb-1">助成金情報を読み込んでいます...</p>
                             <p class="text-sm text-gray-600">しばらくお待ちください</p>
@@ -388,7 +388,7 @@ get_header(); ?>
                     <h3 class="text-xl font-semibold text-gray-900 mb-2">該当する助成金が見つかりませんでした</h3>
                     <p class="text-gray-600 mb-6">検索条件を変更して再度お試しください</p>
                     <div class="flex justify-center gap-4">
-                        <button id="reset-search" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <button id="reset-search" class="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
                             検索条件をリセット
                         </button>
                         <a href="<?php echo home_url('/'); ?>" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
@@ -415,14 +415,14 @@ get_header(); ?>
 
     <!-- フローティングヘルプボタン -->
     <div class="fixed bottom-6 right-6 z-50">
-        <button id="help-toggle" class="w-14 h-14 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 flex items-center justify-center">
+        <button id="help-toggle" class="w-14 h-14 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 flex items-center justify-center">
             <i class="fas fa-question text-lg"></i>
         </button>
         
         <!-- ヘルプパネル -->
         <div id="help-panel" class="hidden absolute bottom-16 right-0 w-80 bg-white rounded-xl shadow-2xl border p-6">
             <h4 class="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <i class="fas fa-info-circle text-blue-600"></i>
+                <i class="fas fa-info-circle text-emerald-600"></i>
                 検索のヒント
             </h4>
             <div class="space-y-3 text-sm text-gray-600">
@@ -441,7 +441,7 @@ get_header(); ?>
                     </div>
                 </div>
                 <div class="flex items-start gap-2">
-                    <i class="fas fa-filter text-blue-500 mt-1"></i>
+                    <i class="fas fa-filter text-emerald-500 mt-1"></i>
                     <div>
                         <strong>絞り込み：</strong><br>
                         金額、募集状況、カテゴリで詳細に絞り込めます
@@ -521,11 +521,11 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.quick-filter').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     document.querySelectorAll('.quick-filter').forEach(b => {
-                        b.classList.remove('active', 'bg-blue-600', 'text-white');
+                        b.classList.remove('active', 'bg-emerald-600', 'text-white');
                         b.classList.add('bg-gray-200', 'text-gray-700');
                     });
                     
-                    e.target.classList.add('active', 'bg-blue-600', 'text-white');
+                    e.target.classList.add('active', 'bg-emerald-600', 'text-white');
                     e.target.classList.remove('bg-gray-200', 'text-gray-700');
 
                     const filter = e.target.dataset.filter;
@@ -638,13 +638,13 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // ボタンの状態更新
             document.querySelectorAll('.view-toggle').forEach(btn => {
-                btn.classList.remove('active', 'bg-white', 'text-blue-600', 'shadow-sm');
+                btn.classList.remove('active', 'bg-white', 'text-emerald-600', 'shadow-sm');
                 btn.classList.add('text-gray-600');
             });
             
             const activeBtn = document.getElementById(view + '-view');
             if (activeBtn) {
-                activeBtn.classList.add('active', 'bg-white', 'text-blue-600', 'shadow-sm');
+                activeBtn.classList.add('active', 'bg-white', 'text-emerald-600', 'shadow-sm');
                 activeBtn.classList.remove('text-gray-600');
             }
 
@@ -781,11 +781,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         createFilterBadge(text, type, icon) {
             const badge = document.createElement('span');
-            badge.className = 'inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full animate-fade-in';
+            badge.className = 'inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-800 text-sm rounded-full animate-fade-in';
             badge.innerHTML = `
                 <span>${icon}</span>
                 <span>${this.escapeHtml(text)}</span>
-                <button class="ml-1 hover:bg-blue-200 rounded-full w-4 h-4 flex items-center justify-center transition-colors" onclick="GrantArchive.removeFilter('${type}', '${this.escapeHtml(text)}')">
+                <button class="ml-1 hover:bg-emerald-200 rounded-full w-4 h-4 flex items-center justify-center transition-colors" onclick="GrantArchive.removeFilter('${type}', '${this.escapeHtml(text)}')">
                     <i class="fas fa-times text-xs"></i>
                 </button>
             `;
@@ -854,13 +854,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // クイックフィルターリセット
             document.querySelectorAll('.quick-filter').forEach(btn => {
-                btn.classList.remove('active', 'bg-blue-600', 'text-white');
+                btn.classList.remove('active', 'bg-emerald-600', 'text-white');
                 btn.classList.add('bg-gray-200', 'text-gray-700');
             });
             
             const allFilter = document.querySelector('.quick-filter[data-filter="all"]');
             if (allFilter) {
-                allFilter.classList.add('active', 'bg-blue-600', 'text-white');
+                allFilter.classList.add('active', 'bg-emerald-600', 'text-white');
                 allFilter.classList.remove('bg-gray-200', 'text-gray-700');
             }
 
@@ -970,7 +970,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         ${grant.thumbnail ? `
                             <img src="${this.escapeHtml(grant.thumbnail)}" alt="${this.escapeHtml(grant.title)}" class="w-full h-48 object-cover" loading="lazy">
                         ` : `
-                            <div class="w-full h-48 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                            <div class="w-full h-48 bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
                                 <i class="fas fa-coins text-4xl text-white"></i>
                             </div>
                         `}
@@ -995,7 +995,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             ` : ''}
                             
                             ${grant.main_category ? `
-                                <span class="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full mb-1">
+                                <span class="inline-block px-2 py-1 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full mb-1">
                                     ${this.escapeHtml(grant.main_category)}
                                 </span>
                             ` : ''}
@@ -1006,7 +1006,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </h3>
                         
                         <div class="flex items-center gap-2 mb-3">
-                            <div class="text-2xl font-bold text-blue-600">
+                            <div class="text-2xl font-bold text-emerald-600">
                                 ${this.escapeHtml(grant.amount)}
                             </div>
                             <span class="text-sm text-gray-500">万円</span>
@@ -1057,7 +1057,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             ${grant.thumbnail ? `
                                 <img src="${this.escapeHtml(grant.thumbnail)}" alt="${this.escapeHtml(grant.title)}" class="w-full h-32 lg:h-24 object-cover rounded-lg" loading="lazy">
                             ` : `
-                                <div class="w-full h-32 lg:h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                                <div class="w-full h-32 lg:h-24 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
                                     <i class="fas fa-coins text-2xl text-white"></i>
                                 </div>
                             `}
@@ -1076,7 +1076,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         ` : ''}
                                         
                                         ${grant.main_category ? `
-                                            <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                                            <span class="px-2 py-1 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full">
                                                 ${this.escapeHtml(grant.main_category)}
                                             </span>
                                         ` : ''}
@@ -1088,7 +1088,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         </button>
                                     </div>
                                     
-                                    <h3 class="text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors">
+                                    <h3 class="text-xl font-semibold text-gray-900 mb-2 hover:text-emerald-600 transition-colors">
                                         <a href="${this.escapeHtml(grant.permalink)}" class="focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded">${this.escapeHtml(grant.title)}</a>
                                     </h3>
                                     
@@ -1115,7 +1115,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 
                                 <div class="lg:w-48 lg:text-right">
                                     <div class="mb-4">
-                                        <div class="text-3xl font-bold text-blue-600">
+                                        <div class="text-3xl font-bold text-emerald-600">
                                             ${this.escapeHtml(grant.amount)}
                                             <span class="text-lg text-gray-500">万円</span>
                                         </div>
@@ -1334,7 +1334,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const toast = document.createElement('div');
             toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-medium transition-all duration-300 transform translate-x-full ${
                 type === 'error' ? 'bg-red-600' : 
-                type === 'success' ? 'bg-green-600' : 'bg-blue-600'
+                type === 'success' ? 'bg-green-600' : 'bg-emerald-600'
             }`;
             toast.textContent = message;
             
@@ -1478,7 +1478,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 /* フォーカス表示の改善 */
 *:focus {
-    outline: 2px solid #3b82f6;
+    outline: 2px solid #10b981;
     outline-offset: 2px;
 }
 

@@ -58,19 +58,19 @@ $search_nonce = wp_create_nonce('grant_insight_search_nonce');
 ?>
 
 <!-- 検索セクション - 完璧実運用版 -->
-<section id="search-section" class="py-16 bg-gradient-to-br from-blue-50 via-white to-indigo-50 relative overflow-hidden">
+<section id="search-section" class="py-16 bg-gradient-to-br from-emerald-50 via-white to-teal-50 relative overflow-hidden">
     <!-- 背景装飾 -->
     <div class="absolute inset-0 opacity-30">
-        <div class="absolute top-10 left-10 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-        <div class="absolute top-20 right-10 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
-        <div class="absolute -bottom-8 left-20 w-80 h-80 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
+        <div class="absolute top-10 left-10 w-72 h-72 bg-emerald-200 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+        <div class="absolute top-20 right-10 w-96 h-96 bg-teal-200 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+        <div class="absolute -bottom-8 left-20 w-80 h-80 bg-emerald-100 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
     </div>
 
     <div class="container mx-auto px-4 relative z-10">
         <!-- セクションヘッダー -->
         <div class="text-center mb-12">
             <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-                <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <span class="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
                     助成金を見つけよう
                 </span>
             </h2>
@@ -113,7 +113,7 @@ $search_nonce = wp_create_nonce('grant_insight_search_nonce');
             foreach ($stats_items as $item): ?>
                 <div class="bg-white rounded-xl shadow-lg p-6 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl">
                     <div class="text-3xl mb-2"><?php echo esc_html($item['icon']); ?></div>
-                    <div class="text-2xl font-bold text-<?php echo esc_attr($item['color']); ?>-600 mb-1">
+                    <div class="text-2xl font-bold text-emerald-600 mb-1">
                         <?php echo number_format($item['count']); ?>
                     </div>
                     <div class="text-sm text-gray-600"><?php echo esc_html($item['label']); ?></div>
@@ -138,7 +138,7 @@ $search_nonce = wp_create_nonce('grant_insight_search_nonce');
                             type="text" 
                             id="search-keyword" 
                             name="keyword"
-                            class="w-full px-6 py-4 text-lg border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 pl-14"
+                            class="w-full px-6 py-4 text-lg border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 transition-all duration-200 pl-14"
                             placeholder="例：IT導入補助金、デジタル化支援、中小企業..."
                             autocomplete="off"
                             aria-describedby="search-keyword-help"
@@ -160,7 +160,7 @@ $search_nonce = wp_create_nonce('grant_insight_search_nonce');
                         <select 
                             id="search-category" 
                             name="category"
-                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200"
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all duration-200"
                             aria-label="助成金カテゴリを選択"
                         >
                             <option value="">すべてのカテゴリ</option>
@@ -182,7 +182,7 @@ $search_nonce = wp_create_nonce('grant_insight_search_nonce');
                         <select 
                             id="search-post-type" 
                             name="post_type"
-                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200"
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all duration-200"
                             aria-label="投稿種類を選択"
                         >
                             <option value="">すべての種類</option>
@@ -201,7 +201,7 @@ $search_nonce = wp_create_nonce('grant_insight_search_nonce');
                         <select 
                             id="search-orderby" 
                             name="orderby"
-                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200"
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all duration-200"
                             aria-label="結果の並び順を選択"
                         >
                             <option value="relevance">関連度順</option>
@@ -225,7 +225,7 @@ $search_nonce = wp_create_nonce('grant_insight_search_nonce');
                                     type="number" 
                                     id="amount-min" 
                                     name="amount_min"
-                                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-100"
+                                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:border-emerald-500 focus:ring-1 focus:ring-emerald-100"
                                     placeholder="最小額"
                                     min="0"
                                     step="10000"
@@ -235,7 +235,7 @@ $search_nonce = wp_create_nonce('grant_insight_search_nonce');
                                     type="number" 
                                     id="amount-max" 
                                     name="amount_max"
-                                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-100"
+                                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:border-emerald-500 focus:ring-1 focus:ring-emerald-100"
                                     placeholder="最大額"
                                     min="0"
                                     step="10000"
@@ -249,7 +249,7 @@ $search_nonce = wp_create_nonce('grant_insight_search_nonce');
                             <select 
                                 id="deadline-filter" 
                                 name="deadline"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-100"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-emerald-500 focus:ring-1 focus:ring-emerald-100"
                             >
                                 <option value="">指定なし</option>
                                 <option value="1month">1ヶ月以内</option>
@@ -269,7 +269,7 @@ $search_nonce = wp_create_nonce('grant_insight_search_nonce');
                         <?php foreach ($popular_tags as $tag): ?>
                             <button 
                                 type="button" 
-                                class="tag-button px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-blue-100 hover:text-blue-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                class="tag-button px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-emerald-100 hover:text-emerald-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                                 data-tag="<?php echo esc_attr($tag->name); ?>"
                                 aria-label="<?php echo esc_attr($tag->name); ?>タグで検索"
                             >
@@ -286,7 +286,7 @@ $search_nonce = wp_create_nonce('grant_insight_search_nonce');
                     <button 
                         type="submit" 
                         id="search-submit"
-                        class="flex-1 sm:flex-initial bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="flex-1 sm:flex-initial bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-emerald-300 disabled:opacity-50 disabled:cursor-not-allowed"
                         aria-label="検索を実行"
                     >
                         <span class="search-button-text">🔍 検索する</span>
@@ -302,7 +302,7 @@ $search_nonce = wp_create_nonce('grant_insight_search_nonce');
                     <button 
                         type="button" 
                         id="advanced-toggle"
-                        class="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-medium hover:border-blue-500 hover:text-blue-600 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        class="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-medium hover:border-emerald-500 hover:text-emerald-600 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                         aria-label="高度な検索オプションを切り替え"
                         aria-expanded="false"
                         aria-controls="advanced-search"
@@ -334,7 +334,7 @@ $search_nonce = wp_create_nonce('grant_insight_search_nonce');
                     <div class="flex border border-gray-300 rounded-lg overflow-hidden">
                         <button 
                             id="grid-view" 
-                            class="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            class="px-4 py-2 bg-emerald-600 text-white hover:bg-emerald-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                             aria-label="グリッド表示に切り替え"
                         >
                             📱
@@ -372,7 +372,7 @@ $search_nonce = wp_create_nonce('grant_insight_search_nonce');
         <!-- ローディング表示 -->
         <div id="search-loading" class="hidden text-center py-12">
             <div class="inline-flex items-center px-6 py-3 bg-white rounded-xl shadow-lg">
-                <svg class="animate-spin -ml-1 mr-3 h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg class="animate-spin -ml-1 mr-3 h-6 w-6 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
@@ -677,7 +677,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const end = Math.min(start + CONFIG.resultsPerPage - 1, total);
         
         resultsInfo.innerHTML = `
-            <span class="text-blue-600 font-bold">${total.toLocaleString()}</span>件中 
+            <span class="text-emerald-600 font-bold">${total.toLocaleString()}</span>件中 
             <span class="text-gray-700">${start.toLocaleString()}-${end.toLocaleString()}</span>件を表示
         `;
     }
@@ -691,7 +691,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <h3 class="text-xl font-semibold text-gray-800 mb-2">検索結果が見つかりませんでした</h3>
                     <p class="text-gray-600 mb-4">検索条件を変更して再度お試しください。</p>
                     <button onclick="document.getElementById('search-reset').click()" 
-                            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                            class="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors duration-200">
                         検索条件をリセット
                     </button>
                 </div>
@@ -735,7 +735,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 ${imageSection}
                 <div class="${contentClass}">
                     <div class="flex items-center justify-between mb-2">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
                             ${getPostTypeLabel(post.post_type)}
                         </span>
                         ${post.is_featured ? '<span class="text-yellow-500">⭐</span>' : ''}
@@ -743,7 +743,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     <h3 id="post-${post.id}-title" class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
                         <a href="${escapeHtml(post.permalink)}" 
-                           class="hover:text-blue-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                           class="hover:text-emerald-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded"
                            aria-describedby="post-${post.id}-excerpt">
                             ${escapeHtml(post.title)}
                         </a>
@@ -768,7 +768,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     <div class="mt-4 flex items-center justify-between">
                         <a href="${escapeHtml(post.permalink)}" 
-                           class="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 rounded">
+                           class="inline-flex items-center text-emerald-600 hover:text-emerald-700 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded">
                             詳細を見る →
                         </a>
                         <button class="favorite-button p-2 rounded-full hover:bg-gray-100 transition-colors duration-200 ${post.is_favorite ? 'text-red-500' : 'text-gray-400'}"
@@ -796,7 +796,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // 前のページ
         if (current_page > 1) {
             paginationHTML += `
-                <button class="pagination-btn px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                <button class="pagination-btn px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                         data-page="${current_page - 1}"
                         aria-label="前のページ">
                     ← 前
@@ -810,7 +810,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (startPage > 1) {
             paginationHTML += `
-                <button class="pagination-btn px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                <button class="pagination-btn px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                         data-page="1">1</button>
             `;
             if (startPage > 2) {
@@ -821,7 +821,7 @@ document.addEventListener('DOMContentLoaded', function() {
         for (let i = startPage; i <= endPage; i++) {
             const isActive = i === current_page;
             paginationHTML += `
-                <button class="pagination-btn px-3 py-2 ${isActive ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'} border border-gray-300 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                <button class="pagination-btn px-3 py-2 ${isActive ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'} border border-gray-300 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                         data-page="${i}"
                         ${isActive ? 'aria-current="page"' : ''}
                         aria-label="ページ ${i}">
@@ -835,7 +835,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 paginationHTML += '<span class="px-2 text-gray-500">...</span>';
             }
             paginationHTML += `
-                <button class="pagination-btn px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                <button class="pagination-btn px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                         data-page="${total_pages}">${total_pages}</button>
             `;
         }
@@ -843,7 +843,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // 次のページ
         if (current_page < total_pages) {
             paginationHTML += `
-                <button class="pagination-btn px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                <button class="pagination-btn px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                         data-page="${current_page + 1}"
                         aria-label="次のページ">
                     次 →
@@ -1022,8 +1022,8 @@ document.addEventListener('DOMContentLoaded', function() {
             searchKeyword.focus();
             
             // タグボタンをアクティブ状態に
-            tagButtons.forEach(btn => btn.classList.remove('bg-blue-100', 'text-blue-700'));
-            event.target.classList.add('bg-blue-100', 'text-blue-700');
+            tagButtons.forEach(btn => btn.classList.remove('bg-emerald-100', 'text-emerald-700'));
+            event.target.classList.add('bg-emerald-100', 'text-emerald-700');
         }
     }
 
@@ -1067,15 +1067,15 @@ document.addEventListener('DOMContentLoaded', function() {
         currentView = viewType;
         
         if (viewType === 'grid') {
-            gridViewButton.classList.add('bg-blue-600', 'text-white');
+            gridViewButton.classList.add('bg-emerald-600', 'text-white');
             gridViewButton.classList.remove('bg-gray-100', 'text-gray-700');
             listViewButton.classList.add('bg-gray-100', 'text-gray-700');
-            listViewButton.classList.remove('bg-blue-600', 'text-white');
+            listViewButton.classList.remove('bg-emerald-600', 'text-white');
         } else {
-            listViewButton.classList.add('bg-blue-600', 'text-white');
+            listViewButton.classList.add('bg-emerald-600', 'text-white');
             listViewButton.classList.remove('bg-gray-100', 'text-gray-700');
             gridViewButton.classList.add('bg-gray-100', 'text-gray-700');
-            gridViewButton.classList.remove('bg-blue-600', 'text-white');
+            gridViewButton.classList.remove('bg-emerald-600', 'text-white');
         }
         
         // 結果を再レンダリング
@@ -1161,7 +1161,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         historySection.classList.remove('hidden');
         historyContainer.innerHTML = searchHistory.map(item => `
-            <button class="history-item px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            <button class="history-item px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     data-keyword="${escapeHtml(item.keyword)}"
                     data-category="${escapeHtml(item.category)}"
                     data-post-type="${escapeHtml(item.post_type)}">
@@ -1344,7 +1344,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 /* フォーカス表示の改善 */
 #search-section *:focus {
-    outline: 2px solid #3B82F6;
+    outline: 2px solid #10b981;
     outline-offset: 2px;
 }
 
@@ -1383,7 +1383,7 @@ document.addEventListener('DOMContentLoaded', function() {
 /* 高コントラスト対応 */
 @media (prefers-contrast: high) {
     #search-section .bg-gradient-to-r {
-        background: #1D4ED8;
+        background: #059669;
     }
     
     #search-section .text-gray-600 {
@@ -1394,24 +1394,24 @@ document.addEventListener('DOMContentLoaded', function() {
 /* ダークモード対応 */
 @media (prefers-color-scheme: dark) {
     #search-section {
-        background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+        background: linear-gradient(135deg, #ecfdf5 0%, #f0fdfa 100%);
     }
     
     #search-section .bg-white {
-        background-color: #374151;
-        color: #F9FAFB;
+        background-color: #ffffff;
+        color: #0f172a;
     }
     
     #search-section .text-gray-900 {
-        color: #F9FAFB;
+        color: #0f172a;
     }
     
     #search-section .text-gray-600 {
-        color: #D1D5DB;
+        color: #334155;
     }
     
     #search-section .border-gray-200 {
-        border-color: #4B5563;
+        border-color: #e2e8f0;
     }
 }
 
