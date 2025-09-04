@@ -1,0 +1,283 @@
+{
+    "version": "6.2.7",
+    "groups": [
+        {
+            "key": "group_68a72417ab106",
+            "title": "助成金詳細",
+            "fields": [
+                {
+                    "key": "field_664e1e8b3b729",
+                    "label": "AIによる3行要約",
+                    "name": "ai_summary",
+                    "type": "wysiwyg",
+                    "instructions": "公募要領などの要点を3行程度でまとめたものを入力してください。箇条書きが推奨です。",
+                    "tabs": "visual",
+                    "toolbar": "basic",
+                    "media_upload": 0
+                },
+                {
+                    "key": "field_664e1e8b3b769",
+                    "label": "最大金額（表示用）",
+                    "name": "max_amount",
+                    "type": "text",
+                    "instructions": "例: 200万円, 50万円/人",
+                    "placeholder": "200万円"
+                },
+                {
+                    "key": "field_max_amount_numeric",
+                    "label": "最大金額（数値）",
+                    "name": "max_amount_numeric",
+                    "type": "number",
+                    "instructions": "検索・ソート用の数値（円単位）",
+                    "placeholder": "2000000"
+                },
+                {
+                    "key": "field_664e1e8b3b7a5",
+                    "label": "締切日（ソート用）",
+                    "name": "deadline_date",
+                    "type": "date_picker",
+                    "display_format": "Y/m/d",
+                    "return_format": "Ymd"
+                },
+                {
+                    "key": "field_664e1fd538c3e",
+                    "label": "締切（表示用テキスト）",
+                    "name": "deadline_text",
+                    "type": "text",
+                    "instructions": "例: 2024年12月27日, 通年"
+                },
+                {
+                    "key": "field_664e1e8b3b7e0",
+                    "label": "公募ステータス",
+                    "name": "application_status",
+                    "type": "select",
+                    "choices": {
+                        "open": "募集中",
+                        "closed": "募集終了",
+                        "upcoming": "募集開始前"
+                    },
+                    "default_value": "open",
+                    "ui": 1
+                },
+                {
+                    "key": "field_difficulty_level",
+                    "label": "申請難易度",
+                    "name": "difficulty_level",
+                    "type": "select",
+                    "choices": {
+                        "easy": "易しい",
+                        "medium": "普通",
+                        "hard": "難しい"
+                    },
+                    "default_value": "medium",
+                    "ui": 1
+                },
+                {
+                    "key": "field_664e1e8b3b819",
+                    "label": "公式サイトURL",
+                    "name": "official_url",
+                    "type": "url"
+                },
+                {
+                    "key": "field_664e1f76e4695",
+                    "label": "関連する専門家",
+                    "name": "related_experts",
+                    "type": "post_object",
+                    "post_type": ["expert"],
+                    "multiple": 1,
+                    "return_format": "object",
+                    "ui": 1
+                }
+            ],
+            "location": [[{"param": "post_type", "operator": "==", "value": "grant"}]]
+        },
+        {
+            "key": "group_664e21a2c8928",
+            "title": "専門家詳細",
+            "fields": [
+                {
+                    "key": "field_664e21a2d5945",
+                    "label": "得意分野・肩書",
+                    "name": "specialty",
+                    "type": "text",
+                    "placeholder": "中小企業診断士 / ITコーディネータ"
+                },
+                {
+                    "key": "field_experience_years",
+                    "label": "経験年数",
+                    "name": "experience_years",
+                    "type": "number",
+                    "placeholder": "10"
+                },
+                {
+                    "key": "field_success_cases",
+                    "label": "成功事例数",
+                    "name": "success_cases",
+                    "type": "number",
+                    "placeholder": "50"
+                },
+                {
+                    "key": "field_consultation_fee",
+                    "label": "相談料金",
+                    "name": "consultation_fee",
+                    "type": "text",
+                    "placeholder": "初回無料、2回目以降 1時間5,000円"
+                },
+                {
+                    "key": "field_664e21bbd5946",
+                    "label": "アフィリエイトリンク",
+                    "name": "affiliate_link",
+                    "type": "url"
+                }
+            ],
+            "location": [[{"param": "post_type", "operator": "==", "value": "expert"}]]
+        },
+        {
+            "key": "group_664e21ebd4dfa",
+            "title": "ツール詳細",
+            "fields": [
+                {
+                    "key": "field_664e21ebd59ca",
+                    "label": "料金",
+                    "name": "price",
+                    "type": "text",
+                    "placeholder": "月額980円〜"
+                },
+                {
+                    "key": "field_price_numeric",
+                    "label": "料金（数値）",
+                    "name": "price_numeric",
+                    "type": "number",
+                    "instructions": "検索・ソート用の数値（円単位）",
+                    "placeholder": "980"
+                },
+                {
+                    "key": "field_664e222bd59cb",
+                    "label": "おすすめ度（星）",
+                    "name": "rating",
+                    "type": "select",
+                    "choices": { 
+                        "5": "★★★★★", 
+                        "4": "★★★★☆", 
+                        "3": "★★★☆☆", 
+                        "2": "★★☆☆☆", 
+                        "1": "★☆☆☆☆" 
+                    }
+                },
+                {
+                    "key": "field_features",
+                    "label": "主な機能",
+                    "name": "features",
+                    "type": "textarea",
+                    "instructions": "ツールの主な機能を箇条書きで記載",
+                    "placeholder": "・申請書類の自動作成\n・進捗管理機能\n・専門家サポート"
+                },
+                {
+                    "key": "field_664e2254d59cc",
+                    "label": "アフィリエイトリンク",
+                    "name": "affiliate_link",
+                    "type": "url"
+                }
+            ],
+            "location": [[{"param": "post_type", "operator": "==", "value": "tool"}]]
+        },
+        {
+            "key": "group_664e229352e46",
+            "title": "成功事例詳細",
+            "fields": [
+                {
+                    "key": "field_664e22935fb7a",
+                    "label": "成果（簡潔な見出し）",
+                    "name": "outcome",
+                    "type": "text",
+                    "instructions": "カード表示用の見出し。例: 500万円の補助金採択に成功",
+                    "placeholder": "500万円の補助金採択に成功"
+                },
+                {
+                    "key": "field_outcome_amount",
+                    "label": "獲得金額（数値）",
+                    "name": "outcome_amount",
+                    "type": "number",
+                    "instructions": "獲得した助成金額（円単位）",
+                    "placeholder": "5000000"
+                },
+                {
+                    "key": "field_company_size",
+                    "label": "企業規模",
+                    "name": "company_size",
+                    "type": "select",
+                    "choices": {
+                        "startup": "スタートアップ",
+                        "small": "小規模企業（従業員20名以下）",
+                        "medium": "中小企業（従業員21-300名）",
+                        "large": "大企業（従業員301名以上）"
+                    }
+                },
+                {
+                    "key": "field_success_factors",
+                    "label": "成功要因",
+                    "name": "success_factors",
+                    "type": "textarea",
+                    "instructions": "成功のポイントを箇条書きで記載",
+                    "placeholder": "・事前の市場調査を徹底\n・専門家との連携\n・計画書の品質向上"
+                },
+                {
+                    "key": "field_664e22ca5fb7b",
+                    "label": "活用した助成金",
+                    "name": "related_grant",
+                    "type": "post_object",
+                    "post_type": ["grant"],
+                    "multiple": 0,
+                    "return_format": "object"
+                },
+                {
+                    "key": "field_664e22ef5fb7c",
+                    "label": "担当した専門家",
+                    "name": "related_expert",
+                    "type": "post_object",
+                    "post_type": ["expert"],
+                    "multiple": 0,
+                    "return_format": "object"
+                }
+            ],
+            "location": [[{"param": "post_type", "operator": "==", "value": "case_study"}]]
+        },
+        {
+            "key": "group_guide_details",
+            "title": "解説ガイド詳細",
+            "fields": [
+                {
+                    "key": "field_guide_difficulty",
+                    "label": "難易度",
+                    "name": "guide_difficulty",
+                    "type": "select",
+                    "choices": {
+                        "beginner": "初心者向け",
+                        "intermediate": "中級者向け",
+                        "advanced": "上級者向け"
+                    },
+                    "default_value": "beginner"
+                },
+                {
+                    "key": "field_reading_time",
+                    "label": "読了時間",
+                    "name": "reading_time",
+                    "type": "text",
+                    "placeholder": "約5分"
+                },
+                {
+                    "key": "field_related_grants",
+                    "label": "関連する助成金",
+                    "name": "related_grants",
+                    "type": "post_object",
+                    "post_type": ["grant"],
+                    "multiple": 1,
+                    "return_format": "object",
+                    "ui": 1
+                }
+            ],
+            "location": [[{"param": "post_type", "operator": "==", "value": "guide"}]]
+        }
+    ]
+}
+

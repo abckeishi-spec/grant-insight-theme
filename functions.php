@@ -1,0 +1,1957 @@
+<?php
+/**
+ * Grant Insight Perfect - Complete Functions File v6.2
+ * Tailwind CSS Play CDN完全対応版 - 都道府県・AJAX・カード統合完璧版
+ * 
+ * @package Grant_Insight_Perfect
+ * @version 6.2-perfect
+ */
+
+// セキュリティチェック
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// テーマバージョン定数
+define('GI_THEME_VERSION', '6.2.0');
+define('GI_THEME_PREFIX', 'gi_');
+
+/**
+ * テーマセットアップ
+ */
+function gi_setup() {
+    // テーマサポート追加
+    add_theme_support('title-tag');
+    add_theme_support('post-thumbnails');
+    add_theme_support('html5', array(
+        'search-form',
+        'comment-form',
+        'comment-list',
+        'gallery',
+        'caption',
+        'style',
+        'script'
+    ));
+    add_theme_support('custom-background');
+    add_theme_support('custom-logo', array(
+        'height'      => 250,
+        'width'       => 250,
+        'flex-width'  => true,
+        'flex-height' => true,
+    ));
+    add_theme_support('menus');
+    add_theme_support('customize-selective-refresh-widgets');
+    add_theme_support('responsive-embeds');
+    add_theme_support('align-wide');
+    add_theme_support('wp-block-styles');
+    
+    // RSS フィード
+    add_theme_support('automatic-feed-links');
+    
+    // 画像サイズ追加
+    add_image_size('gi-card-thumb', 400, 300, true);
+    add_image_size('gi-hero-thumb', 800, 600, true);
+    add_image_size('gi-tool-logo', 120, 120, true);
+    add_image_size('gi-banner', 1200, 400, true);
+    
+    // 言語ファイル読み込み
+    load_theme_textdomain('grant-insight', get_template_directory() . '/languages');
+    
+    // メニュー登録
+    register_nav_menus(array(
+        'primary' => 'メインメニュー',
+        'footer' => 'フッターメニュー',
+        'mobile' => 'モバイルメニュー'
+    ));
+}
+add_action('after_setup_theme', 'gi_setup');
+
+/**
+ * コンテンツ幅設定
+ */
+function gi_content_width() {
+    $GLOBALS['content_width'] = apply_filters('gi_content_width', 1200);
+}
+add_action('after_setup_theme', 'gi_content_width', 0);
+
+/**
+ * スクリプト・スタイルの読み込み（完全一元管理）
+ */
+function gi_enqueue_scripts() {
+    // Tailwind CSS Play CDN（一元管理）
+    wp_enqueue_script('tailwind-cdn', 'https://cdn.tailwindcss.com', array(), GI_THEME_VERSION, false);
+    
+    // Tailwind設定（完全版）
+    $tailwind_config = "
+    tailwind.config = {
+        darkMode: 'class',
+        theme: {
+            extend: {
+                colors: {
+                    'emerald-custom': {
+                        50: '#ecfdf5',
+                        100: '#d1fae5',
+                        200: '#bbf7d0',
+                        300: '#86efac',
+                        400: '#4ade80',
+                        500: '#10b981',
+                        600: '#059669',
+                        700: '#047857',
+                        800: '#065f46',
+                        900: '#064e3b',
+                    },
+                    'teal-custom': {
+                        50: '#f0fdfa',
+                        100: '#ccfbf1',
+                        200: '#99f6e4',
+                        300: '#5eead4',
+                        400: '#2dd4bf',
+                        500: '#14b8a6',
+                        600: '#0d9488',
+                        700: '#0f766e',
+                        800: '#115e59',
+                        900: '#134e4a',
+                    },
+                    'primary': {
+                        50: '#f0f9ff',
+                        100: '#e0f2fe',
+                        200: '#bae6fd',
+                        300: '#7dd3fc',
+                        400: '#38bdf8',
+                        500: '#0ea5e9',
+                        600: '#0284c7',
+                        700: '#0369a1',
+                        800: '#075985',
+                        900: '#0c4a6e',
+                    }
+                },
+                animation: {
+                    'fade-in': 'fadeIn 0.6s ease-out',
+                    'fade-in-up': 'fadeInUp 0.6s ease-out',
+                    'fade-in-down': 'fadeInDown 0.6s ease-out',
+                    'fade-in-left': 'fadeInLeft 0.6s ease-out',
+                    'fade-in-right': 'fadeInRight 0.6s ease-out',
+                    'slide-up': 'slideUp 0.4s ease-out',
+                    'slide-down': 'slideDown 0.4s ease-out',
+                    'slide-in': 'slideIn 0.3s ease-out',
+                    'bounce-gentle': 'bounceGentle 1s ease-out',
+                    'pulse-gentle': 'pulseGentle 2s ease-in-out infinite',
+                    'float': 'float 3s ease-in-out infinite',
+                    'spin-slow': 'spin 20s linear infinite',
+                    'wiggle': 'wiggle 0.5s ease-in-out',
+                    'scale-in': 'scaleIn 0.5s ease-out',
+                    'glow': 'glow 2s ease-in-out infinite alternate'
+                },
+                keyframes: {
+                    fadeIn: {
+                        '0%': { opacity: '0' },
+                        '100%': { opacity: '1' }
+                    },
+                    fadeInUp: {
+                        '0%': { opacity: '0', transform: 'translateY(20px)' },
+                        '100%': { opacity: '1', transform: 'translateY(0)' }
+                    },
+                    fadeInDown: {
+                        '0%': { opacity: '0', transform: 'translateY(-20px)' },
+                        '100%': { opacity: '1', transform: 'translateY(0)' }
+                    },
+                    fadeInLeft: {
+                        '0%': { opacity: '0', transform: 'translateX(-20px)' },
+                        '100%': { opacity: '1', transform: 'translateX(0)' }
+                    },
+                    fadeInRight: {
+                        '0%': { opacity: '0', transform: 'translateX(20px)' },
+                        '100%': { opacity: '1', transform: 'translateX(0)' }
+                    },
+                    slideUp: {
+                        '0%': { opacity: '0', transform: 'translateY(40px)' },
+                        '100%': { opacity: '1', transform: 'translateY(0)' }
+                    },
+                    slideDown: {
+                        '0%': { opacity: '0', transform: 'translateY(-40px)' },
+                        '100%': { opacity: '1', transform: 'translateY(0)' }
+                    },
+                    slideIn: {
+                        '0%': { opacity: '0', transform: 'translateX(-10px)' },
+                        '100%': { opacity: '1', transform: 'translateX(0)' }
+                    },
+                    bounceGentle: {
+                        '0%': { transform: 'scale(0.95)' },
+                        '50%': { transform: 'scale(1.02)' },
+                        '100%': { transform: 'scale(1)' }
+                    },
+                    pulseGentle: {
+                        '0%, 100%': { opacity: '1' },
+                        '50%': { opacity: '0.8' }
+                    },
+                    float: {
+                        '0%, 100%': { transform: 'translateY(0px)' },
+                        '50%': { transform: 'translateY(-10px)' }
+                    },
+                    wiggle: {
+                        '0%, 100%': { transform: 'rotate(-2deg)' },
+                        '50%': { transform: 'rotate(2deg)' }
+                    },
+                    scaleIn: {
+                        '0%': { opacity: '0', transform: 'scale(0.9)' },
+                        '100%': { opacity: '1', transform: 'scale(1)' }
+                    },
+                    glow: {
+                        '0%': { boxShadow: '0 0 5px rgba(16, 185, 129, 0.2)' },
+                        '100%': { boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)' }
+                    }
+                },
+                fontFamily: {
+                    'noto': ['Noto Sans JP', 'sans-serif'],
+                    'heading': ['Noto Sans JP', 'system-ui', 'sans-serif']
+                },
+                fontSize: {
+                    'xs': ['0.75rem', { lineHeight: '1rem' }],
+                    'sm': ['0.875rem', { lineHeight: '1.25rem' }],
+                    'base': ['1rem', { lineHeight: '1.5rem' }],
+                    'lg': ['1.125rem', { lineHeight: '1.75rem' }],
+                    'xl': ['1.25rem', { lineHeight: '1.75rem' }],
+                    '2xl': ['1.5rem', { lineHeight: '2rem' }],
+                    '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
+                    '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
+                    '5xl': ['3rem', { lineHeight: '1' }],
+                    '6xl': ['3.75rem', { lineHeight: '1' }],
+                    '7xl': ['4.5rem', { lineHeight: '1' }],
+                    '8xl': ['6rem', { lineHeight: '1' }],
+                    '9xl': ['8rem', { lineHeight: '1' }]
+                },
+                spacing: {
+                    '18': '4.5rem',
+                    '88': '22rem',
+                    '128': '32rem',
+                    '144': '36rem'
+                },
+                boxShadow: {
+                    'glow': '0 0 20px rgba(16, 185, 129, 0.3)',
+                    'glow-lg': '0 0 30px rgba(16, 185, 129, 0.4)',
+                    'card': '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+                    'card-hover': '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+                },
+                backdropBlur: {
+                    'xs': '2px'
+                },
+                screens: {
+                    'xs': '475px'
+                }
+            }
+        },
+        plugins: []
+    }";
+    wp_add_inline_script('tailwind-cdn', $tailwind_config);
+    
+    // Font Awesome CDN（一元管理）
+    wp_enqueue_style('font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css', array(), '6.4.0');
+    
+    // Google Fonts
+    wp_enqueue_style('google-fonts', 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;800;900&display=swap', array(), null);
+    
+    // テーマスタイル
+    wp_enqueue_style('gi-style', get_stylesheet_uri(), array(), GI_THEME_VERSION);
+    
+    // メインJavaScript
+    wp_enqueue_script('gi-main-js', get_template_directory_uri() . '/js/main.js', array('jquery'), GI_THEME_VERSION, true);
+    
+    // AJAX設定（強化版）
+    wp_localize_script('gi-main-js', 'giAjax', array(
+        'ajaxurl' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('gi_ajax_nonce'),
+        'homeUrl' => home_url('/'),
+        'themeUrl' => get_template_directory_uri(),
+        'uploadsUrl' => wp_upload_dir()['baseurl'],
+        'isAdmin' => current_user_can('administrator'),
+        'userId' => get_current_user_id(),
+        'version' => GI_THEME_VERSION,
+        'debug' => WP_DEBUG,
+        'strings' => array(
+            'loading' => '読み込み中...',
+            'error' => 'エラーが発生しました',
+            'noResults' => '結果が見つかりませんでした',
+            'confirm' => '実行してもよろしいですか？'
+        )
+    ));
+    
+    // 条件付きスクリプト読み込み
+    if (is_singular()) {
+        wp_enqueue_script('comment-reply');
+    }
+    
+    if (is_front_page()) {
+        wp_enqueue_script('gi-frontend-js', get_template_directory_uri() . '/js/frontend.js', array('gi-main-js'), GI_THEME_VERSION, true);
+    }
+}
+add_action('wp_enqueue_scripts', 'gi_enqueue_scripts');
+
+/**
+ * 管理画面用スクリプト
+ */
+function gi_admin_enqueue_scripts($hook) {
+    wp_enqueue_style('gi-admin-style', get_template_directory_uri() . '/css/admin.css', array(), GI_THEME_VERSION);
+    wp_enqueue_script('gi-admin-js', get_template_directory_uri() . '/js/admin.js', array('jquery'), GI_THEME_VERSION, true);
+    
+    wp_localize_script('gi-admin-js', 'giAdmin', array(
+        'ajaxurl' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('gi_admin_nonce')
+    ));
+}
+add_action('admin_enqueue_scripts', 'gi_admin_enqueue_scripts');
+
+/**
+ * カスタム投稿タイプ登録（完全版）
+ */
+function gi_register_post_types() {
+    // 助成金投稿タイプ
+    register_post_type('grant', array(
+        'labels' => array(
+            'name' => '助成金・補助金',
+            'singular_name' => '助成金・補助金',
+            'add_new' => '新規追加',
+            'add_new_item' => '新しい助成金・補助金を追加',
+            'edit_item' => '助成金・補助金を編集',
+            'new_item' => '新しい助成金・補助金',
+            'view_item' => '助成金・補助金を表示',
+            'search_items' => '助成金・補助金を検索',
+            'not_found' => '助成金・補助金が見つかりませんでした',
+            'not_found_in_trash' => 'ゴミ箱に助成金・補助金はありません',
+            'all_items' => 'すべての助成金・補助金',
+            'menu_name' => '助成金・補助金'
+        ),
+        'description' => '助成金・補助金情報を管理します',
+        'public' => true,
+        'publicly_queryable' => true,
+        'show_ui' => true,
+        'show_in_menu' => true,
+        'query_var' => true,
+        'rewrite' => array(
+            'slug' => 'grants',
+            'with_front' => false
+        ),
+        'capability_type' => 'post',
+        'has_archive' => true,
+        'hierarchical' => false,
+        'menu_position' => 5,
+        'menu_icon' => 'dashicons-money-alt',
+        'supports' => array('title', 'editor', 'thumbnail', 'excerpt', 'custom-fields', 'revisions'),
+        'show_in_rest' => true
+    ));
+    
+    // ツール投稿タイプ
+    register_post_type('tool', array(
+        'labels' => array(
+            'name' => 'ビジネスツール',
+            'singular_name' => 'ビジネスツール',
+            'add_new' => '新規追加',
+            'add_new_item' => '新しいツールを追加',
+            'edit_item' => 'ツールを編集',
+            'new_item' => '新しいツール',
+            'view_item' => 'ツールを表示',
+            'search_items' => 'ツールを検索',
+            'not_found' => 'ツールが見つかりませんでした',
+            'not_found_in_trash' => 'ゴミ箱にツールはありません',
+            'all_items' => 'すべてのツール',
+            'menu_name' => 'ビジネスツール'
+        ),
+        'description' => 'ビジネスツール情報を管理します',
+        'public' => true,
+        'publicly_queryable' => true,
+        'show_ui' => true,
+        'show_in_menu' => true,
+        'query_var' => true,
+        'rewrite' => array(
+            'slug' => 'tools',
+            'with_front' => false
+        ),
+        'capability_type' => 'post',
+        'has_archive' => true,
+        'hierarchical' => false,
+        'menu_position' => 6,
+        'menu_icon' => 'dashicons-admin-tools',
+        'supports' => array('title', 'editor', 'thumbnail', 'excerpt', 'custom-fields', 'revisions'),
+        'show_in_rest' => true
+    ));
+    
+    // 成功事例投稿タイプ
+    register_post_type('case_study', array(
+        'labels' => array(
+            'name' => '成功事例',
+            'singular_name' => '成功事例',
+            'add_new' => '新規追加',
+            'add_new_item' => '新しい成功事例を追加',
+            'edit_item' => '成功事例を編集',
+            'new_item' => '新しい成功事例',
+            'view_item' => '成功事例を表示',
+            'search_items' => '成功事例を検索',
+            'not_found' => '成功事例が見つかりませんでした',
+            'not_found_in_trash' => 'ゴミ箱に成功事例はありません',
+            'all_items' => 'すべての成功事例',
+            'menu_name' => '成功事例'
+        ),
+        'description' => '成功事例情報を管理します',
+        'public' => true,
+        'publicly_queryable' => true,
+        'show_ui' => true,
+        'show_in_menu' => true,
+        'query_var' => true,
+        'rewrite' => array(
+            'slug' => 'case-studies',
+            'with_front' => false
+        ),
+        'capability_type' => 'post',
+        'has_archive' => true,
+        'hierarchical' => false,
+        'menu_position' => 7,
+        'menu_icon' => 'dashicons-chart-line',
+        'supports' => array('title', 'editor', 'thumbnail', 'excerpt', 'custom-fields', 'revisions'),
+        'show_in_rest' => true
+    ));
+    
+    // ガイド投稿タイプ
+    register_post_type('guide', array(
+        'labels' => array(
+            'name' => 'ガイド・解説',
+            'singular_name' => 'ガイド・解説',
+            'add_new' => '新規追加',
+            'add_new_item' => '新しいガイドを追加',
+            'edit_item' => 'ガイドを編集',
+            'new_item' => '新しいガイド',
+            'view_item' => 'ガイドを表示',
+            'search_items' => 'ガイドを検索',
+            'not_found' => 'ガイドが見つかりませんでした',
+            'not_found_in_trash' => 'ゴミ箱にガイドはありません',
+            'all_items' => 'すべてのガイド',
+            'menu_name' => 'ガイド・解説'
+        ),
+        'description' => 'ガイド・解説情報を管理します',
+        'public' => true,
+        'publicly_queryable' => true,
+        'show_ui' => true,
+        'show_in_menu' => true,
+        'query_var' => true,
+        'rewrite' => array(
+            'slug' => 'guides',
+            'with_front' => false
+        ),
+        'capability_type' => 'post',
+        'has_archive' => true,
+        'hierarchical' => false,
+        'menu_position' => 8,
+        'menu_icon' => 'dashicons-book-alt',
+        'supports' => array('title', 'editor', 'thumbnail', 'excerpt', 'custom-fields', 'revisions'),
+        'show_in_rest' => true
+    ));
+    
+    // 申請のコツ投稿タイプ
+    register_post_type('grant_tip', array(
+        'labels' => array(
+            'name' => '申請のコツ',
+            'singular_name' => '申請のコツ',
+            'add_new' => '新規追加',
+            'add_new_item' => '新しいコツを追加',
+            'edit_item' => 'コツを編集',
+            'new_item' => '新しいコツ',
+            'view_item' => 'コツを表示',
+            'search_items' => 'コツを検索',
+            'not_found' => 'コツが見つかりませんでした',
+            'not_found_in_trash' => 'ゴミ箱にコツはありません',
+            'all_items' => 'すべてのコツ',
+            'menu_name' => '申請のコツ'
+        ),
+        'description' => '申請のコツ情報を管理します',
+        'public' => true,
+        'publicly_queryable' => true,
+        'show_ui' => true,
+        'show_in_menu' => true,
+        'query_var' => true,
+        'rewrite' => array(
+            'slug' => 'grant-tips',
+            'with_front' => false
+        ),
+        'capability_type' => 'post',
+        'has_archive' => true,
+        'hierarchical' => false,
+        'menu_position' => 9,
+        'menu_icon' => 'dashicons-lightbulb',
+        'supports' => array('title', 'editor', 'thumbnail', 'excerpt', 'custom-fields', 'revisions'),
+        'show_in_rest' => true
+    ));
+}
+add_action('init', 'gi_register_post_types');
+
+/**
+ * カスタムタクソノミー登録（完全版・都道府県対応）
+ */
+function gi_register_taxonomies() {
+    // 助成金カテゴリー
+    register_taxonomy('grant_category', 'grant', array(
+        'labels' => array(
+            'name' => '助成金カテゴリー',
+            'singular_name' => '助成金カテゴリー',
+            'search_items' => 'カテゴリーを検索',
+            'all_items' => 'すべてのカテゴリー',
+            'parent_item' => '親カテゴリー',
+            'parent_item_colon' => '親カテゴリー:',
+            'edit_item' => 'カテゴリーを編集',
+            'update_item' => 'カテゴリーを更新',
+            'add_new_item' => '新しいカテゴリーを追加',
+            'new_item_name' => '新しいカテゴリー名'
+        ),
+        'description' => '助成金・補助金をカテゴリー別に分類します',
+        'public' => true,
+        'publicly_queryable' => true,
+        'hierarchical' => true,
+        'show_ui' => true,
+        'show_in_menu' => true,
+        'show_in_nav_menus' => true,
+        'show_in_rest' => true,
+        'show_tagcloud' => true,
+        'show_admin_column' => true,
+        'query_var' => true,
+        'rewrite' => array(
+            'slug' => 'grant-category',
+            'with_front' => false,
+            'hierarchical' => true
+        )
+    ));
+    
+    // 都道府県タクソノミー
+    register_taxonomy('grant_prefecture', 'grant', array(
+        'labels' => array(
+            'name' => '対象都道府県',
+            'singular_name' => '都道府県',
+            'search_items' => '都道府県を検索',
+            'all_items' => 'すべての都道府県',
+            'edit_item' => '都道府県を編集',
+            'update_item' => '都道府県を更新',
+            'add_new_item' => '新しい都道府県を追加',
+            'new_item_name' => '新しい都道府県名'
+        ),
+        'description' => '助成金・補助金の対象都道府県を管理します',
+        'public' => true,
+        'publicly_queryable' => true,
+        'hierarchical' => false,
+        'show_ui' => true,
+        'show_in_menu' => true,
+        'show_in_nav_menus' => true,
+        'show_in_rest' => true,
+        'show_tagcloud' => true,
+        'show_admin_column' => true,
+        'query_var' => true,
+        'rewrite' => array(
+            'slug' => 'prefecture',
+            'with_front' => false
+        )
+    ));
+    
+    // 助成金タグ
+    register_taxonomy('grant_tag', 'grant', array(
+        'labels' => array(
+            'name' => '助成金タグ',
+            'singular_name' => '助成金タグ',
+            'search_items' => 'タグを検索',
+            'all_items' => 'すべてのタグ',
+            'edit_item' => 'タグを編集',
+            'update_item' => 'タグを更新',
+            'add_new_item' => '新しいタグを追加',
+            'new_item_name' => '新しいタグ名'
+        ),
+        'description' => '助成金・補助金をタグで分類します',
+        'public' => true,
+        'publicly_queryable' => true,
+        'hierarchical' => false,
+        'show_ui' => true,
+        'show_in_menu' => true,
+        'show_in_nav_menus' => true,
+        'show_in_rest' => true,
+        'show_tagcloud' => true,
+        'show_admin_column' => true,
+        'query_var' => true,
+        'rewrite' => array(
+            'slug' => 'grant-tag',
+            'with_front' => false
+        )
+    ));
+    
+    // ツールカテゴリー
+    register_taxonomy('tool_category', 'tool', array(
+        'labels' => array(
+            'name' => 'ツールカテゴリー',
+            'singular_name' => 'ツールカテゴリー',
+            'search_items' => 'カテゴリーを検索',
+            'all_items' => 'すべてのカテゴリー',
+            'parent_item' => '親カテゴリー',
+            'parent_item_colon' => '親カテゴリー:',
+            'edit_item' => 'カテゴリーを編集',
+            'update_item' => 'カテゴリーを更新',
+            'add_new_item' => '新しいカテゴリーを追加',
+            'new_item_name' => '新しいカテゴリー名'
+        ),
+        'description' => 'ビジネスツールをカテゴリー別に分類します',
+        'public' => true,
+        'publicly_queryable' => true,
+        'hierarchical' => true,
+        'show_ui' => true,
+        'show_in_menu' => true,
+        'show_in_nav_menus' => true,
+        'show_in_rest' => true,
+        'show_tagcloud' => true,
+        'show_admin_column' => true,
+        'query_var' => true,
+        'rewrite' => array(
+            'slug' => 'tool-category',
+            'with_front' => false,
+            'hierarchical' => true
+        )
+    ));
+    
+    // 成功事例カテゴリー
+    register_taxonomy('case_study_category', 'case_study', array(
+        'labels' => array(
+            'name' => '成功事例カテゴリー',
+            'singular_name' => '成功事例カテゴリー',
+            'search_items' => 'カテゴリーを検索',
+            'all_items' => 'すべてのカテゴリー',
+            'parent_item' => '親カテゴリー',
+            'parent_item_colon' => '親カテゴリー:',
+            'edit_item' => 'カテゴリーを編集',
+            'update_item' => 'カテゴリーを更新',
+            'add_new_item' => '新しいカテゴリーを追加',
+            'new_item_name' => '新しいカテゴリー名'
+        ),
+        'description' => '成功事例をカテゴリー別に分類します',
+        'public' => true,
+        'publicly_queryable' => true,
+        'hierarchical' => true,
+        'show_ui' => true,
+        'show_in_menu' => true,
+        'show_in_nav_menus' => true,
+        'show_in_rest' => true,
+        'show_tagcloud' => true,
+        'show_admin_column' => true,
+        'query_var' => true,
+        'rewrite' => array(
+            'slug' => 'case-category',
+            'with_front' => false,
+            'hierarchical' => true
+        )
+    ));
+}
+add_action('init', 'gi_register_taxonomies');
+
+/**
+ * デフォルト都道府県データの挿入
+ */
+function gi_insert_default_prefectures() {
+    $prefectures = array(
+        '全国対応', '北海道', '青森県', '岩手県', '宮城県', '秋田県', '山形県', '福島県',
+        '茨城県', '栃木県', '群馬県', '埼玉県', '千葉県', '東京都', '神奈川県',
+        '新潟県', '富山県', '石川県', '福井県', '山梨県', '長野県', '岐阜県',
+        '静岡県', '愛知県', '三重県', '滋賀県', '京都府', '大阪府', '兵庫県',
+        '奈良県', '和歌山県', '鳥取県', '島根県', '岡山県', '広島県', '山口県',
+        '徳島県', '香川県', '愛媛県', '高知県', '福岡県', '佐賀県', '長崎県',
+        '熊本県', '大分県', '宮崎県', '鹿児島県', '沖縄県'
+    );
+
+    foreach ($prefectures as $prefecture) {
+        if (!term_exists($prefecture, 'grant_prefecture')) {
+            wp_insert_term($prefecture, 'grant_prefecture');
+        }
+    }
+}
+add_action('init', 'gi_insert_default_prefectures');
+
+/**
+ * デフォルトカテゴリーデータの挿入
+ */
+function gi_insert_default_categories() {
+    $categories = array(
+        'IT・デジタル化支援',
+        '設備投資・機械導入',
+        '人材育成・教育訓練',
+        '研究開発・技術革新',
+        '省エネ・環境対策',
+        '事業承継・M&A',
+        '海外展開・輸出促進',
+        '創業・起業支援',
+        '販路開拓・マーケティング',
+        '働き方改革・労働環境',
+        '観光・地域振興',
+        '農業・林業・水産業',
+        '製造業・ものづくり',
+        'サービス業・小売業',
+        'コロナ対策・事業継続',
+        '女性・若者・シニア支援',
+        '障がい者雇用支援',
+        '知的財産・特許',
+        'BCP・リスク管理',
+        'その他・汎用'
+    );
+
+    foreach ($categories as $category) {
+        if (!term_exists($category, 'grant_category')) {
+            wp_insert_term($category, 'grant_category');
+        }
+    }
+}
+add_action('init', 'gi_insert_default_categories');
+
+/**
+ * セキュリティ・ヘルパー関数群（強化版）
+ */
+
+// 安全なメタ取得
+function gi_safe_get_meta($post_id, $key, $default = '') {
+    if (!$post_id || !is_numeric($post_id)) {
+        return $default;
+    }
+    
+    $value = get_post_meta($post_id, $key, true);
+    
+    if (is_null($value) || $value === false || $value === '') {
+        return $default;
+    }
+    
+    return $value;
+}
+
+// 安全な属性出力
+function gi_safe_attr($value) {
+    if (is_array($value)) {
+        $value = implode(' ', $value);
+    }
+    return esc_attr($value);
+}
+
+// 安全なHTML出力
+function gi_safe_escape($value) {
+    if (is_array($value)) {
+        return array_map('esc_html', $value);
+    }
+    return esc_html($value);
+}
+
+// 安全な数値フォーマット
+function gi_safe_number_format($value, $decimals = 0) {
+    if (!is_numeric($value)) {
+        return '0';
+    }
+    $num = floatval($value);
+    return number_format($num, $decimals);
+}
+
+// 安全な日付フォーマット
+function gi_safe_date_format($date, $format = 'Y-m-d') {
+    if (empty($date)) {
+        return '';
+    }
+    
+    if (is_numeric($date)) {
+        return date($format, $date);
+    }
+    
+    $timestamp = strtotime($date);
+    if ($timestamp === false) {
+        return $date;
+    }
+    
+    return date($format, $timestamp);
+}
+
+// 安全なパーセント表示
+function gi_safe_percent_format($value, $decimals = 1) {
+    if (!is_numeric($value)) {
+        return '0%';
+    }
+    $num = floatval($value);
+    return number_format($num, $decimals) . '%';
+}
+
+// 安全なURL出力
+function gi_safe_url($url) {
+    if (empty($url)) {
+        return '';
+    }
+    return esc_url($url);
+}
+
+// 安全なJSON出力
+function gi_safe_json($data) {
+    return wp_json_encode($data, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE);
+}
+
+// 安全なテキスト切り取り
+function gi_safe_excerpt($text, $length = 100, $more = '...') {
+    if (mb_strlen($text) <= $length) {
+        return esc_html($text);
+    }
+    
+    $excerpt = mb_substr($text, 0, $length);
+    $last_space = mb_strrpos($excerpt, ' ');
+    
+    if ($last_space !== false) {
+        $excerpt = mb_substr($excerpt, 0, $last_space);
+    }
+    
+    return esc_html($excerpt . $more);
+}
+
+/**
+ * 動的パス取得関数（完全版）
+ */
+
+// アセットURL取得
+function gi_get_asset_url($path) {
+    $path = ltrim($path, '/');
+    return get_template_directory_uri() . '/' . $path;
+}
+
+// アップロードURL取得
+function gi_get_upload_url($filename) {
+    $upload_dir = wp_upload_dir();
+    $filename = ltrim($filename, '/');
+    return $upload_dir['baseurl'] . '/' . $filename;
+}
+
+// メディアURL取得（自動検出機能付き）
+function gi_get_media_url($filename, $fallback = true) {
+    if (empty($filename)) {
+        return $fallback ? gi_get_asset_url('assets/images/placeholder.jpg') : '';
+    }
+    
+    if (filter_var($filename, FILTER_VALIDATE_URL)) {
+        return $filename;
+    }
+    
+    $filename = str_replace([
+        'http://keishi0804.xsrv.jp/wp-content/uploads/',
+        'https://keishi0804.xsrv.jp/wp-content/uploads/',
+        '/wp-content/uploads/'
+    ], '', $filename);
+    
+    $filename = ltrim($filename, '/');
+    
+    $upload_dir = wp_upload_dir();
+    $file_path = $upload_dir['basedir'] . '/' . $filename;
+    
+    if (file_exists($file_path)) {
+        return $upload_dir['baseurl'] . '/' . $filename;
+    }
+    
+    $current_year = date('Y');
+    $current_month = date('m');
+    
+    $possible_paths = [
+        $current_year . '/' . $current_month . '/' . $filename,
+        $current_year . '/' . $filename,
+        'uploads/' . $filename,
+        'media/' . $filename
+    ];
+    
+    foreach ($possible_paths as $path) {
+        $full_path = $upload_dir['basedir'] . '/' . $path;
+        if (file_exists($full_path)) {
+            return $upload_dir['baseurl'] . '/' . $path;
+        }
+    }
+    
+    if ($fallback) {
+        return gi_get_asset_url('assets/images/placeholder.jpg');
+    }
+    
+    return '';
+}
+
+// 動画URL取得
+function gi_get_video_url($filename, $fallback = true) {
+    $url = gi_get_media_url($filename, false);
+    
+    if (!empty($url)) {
+        return $url;
+    }
+    
+    if ($fallback) {
+        return gi_get_asset_url('assets/videos/placeholder.mp4');
+    }
+    
+    return '';
+}
+
+// ロゴURL取得
+function gi_get_logo_url($fallback = true) {
+    $custom_logo_id = get_theme_mod('custom_logo');
+    if ($custom_logo_id) {
+        return wp_get_attachment_image_url($custom_logo_id, 'full');
+    }
+    
+    $hero_logo = get_theme_mod('gi_hero_logo');
+    if ($hero_logo) {
+        return gi_get_media_url($hero_logo, false);
+    }
+    
+    if ($fallback) {
+        return gi_get_asset_url('assets/images/logo.png');
+    }
+    
+    return '';
+}
+
+/**
+ * AJAX - 助成金読み込み処理（都道府県・完全対応版）
+ */
+function gi_ajax_load_grants() {
+    if (!wp_verify_nonce($_POST['nonce'], 'gi_ajax_nonce')) {
+        wp_send_json_error('セキュリティチェックに失敗しました');
+    }
+
+    $search = sanitize_text_field($_POST['search'] ?? '');
+    $categories = json_decode(stripslashes($_POST['categories'] ?? '[]'), true);
+    $prefectures = json_decode(stripslashes($_POST['prefectures'] ?? '[]'), true);
+    $amount = sanitize_text_field($_POST['amount'] ?? '');
+    $status = json_decode(stripslashes($_POST['status'] ?? '[]'), true);
+    $sort = sanitize_text_field($_POST['sort'] ?? 'date_desc');
+    $view = sanitize_text_field($_POST['view'] ?? 'grid');
+    $page = intval($_POST['page'] ?? 1);
+    $posts_per_page = 12;
+
+    // クエリ引数
+    $args = array(
+        'post_type' => 'grant',
+        'posts_per_page' => $posts_per_page,
+        'paged' => $page,
+        'post_status' => 'publish'
+    );
+
+    // 検索キーワード
+    if (!empty($search)) {
+        $args['s'] = $search;
+    }
+
+    // タクソノミークエリ
+    $tax_query = array('relation' => 'AND');
+
+    // カテゴリーフィルター
+    if (!empty($categories)) {
+        $tax_query[] = array(
+            'taxonomy' => 'grant_category',
+            'field' => 'slug',
+            'terms' => $categories,
+            'operator' => 'IN'
+        );
+    }
+
+    // 都道府県フィルター
+    if (!empty($prefectures)) {
+        $tax_query[] = array(
+            'taxonomy' => 'grant_prefecture',
+            'field' => 'slug',
+            'terms' => $prefectures,
+            'operator' => 'IN'
+        );
+    }
+
+    if (count($tax_query) > 1) {
+        $args['tax_query'] = $tax_query;
+    }
+
+    // メタクエリ
+    $meta_query = array('relation' => 'AND');
+
+    // 金額フィルター
+    if (!empty($amount)) {
+        switch ($amount) {
+            case '0-100':
+                $meta_query[] = array(
+                    'key' => 'max_amount',
+                    'value' => 100,
+                    'compare' => '<=',
+                    'type' => 'NUMERIC'
+                );
+                break;
+            case '100-500':
+                $meta_query[] = array(
+                    'key' => 'max_amount',
+                    'value' => array(100, 500),
+                    'compare' => 'BETWEEN',
+                    'type' => 'NUMERIC'
+                );
+                break;
+            case '500-1000':
+                $meta_query[] = array(
+                    'key' => 'max_amount',
+                    'value' => array(500, 1000),
+                    'compare' => 'BETWEEN',
+                    'type' => 'NUMERIC'
+                );
+                break;
+            case '1000+':
+                $meta_query[] = array(
+                    'key' => 'max_amount',
+                    'value' => 1000,
+                    'compare' => '>',
+                    'type' => 'NUMERIC'
+                );
+                break;
+        }
+    }
+
+    // ステータスフィルター
+    if (!empty($status)) {
+        $meta_query[] = array(
+            'key' => 'status',
+            'value' => $status,
+            'compare' => 'IN'
+        );
+    }
+
+    if (count($meta_query) > 1) {
+        $args['meta_query'] = $meta_query;
+    }
+
+    // 並び順
+    switch ($sort) {
+        case 'date_desc':
+            $args['orderby'] = 'date';
+            $args['order'] = 'DESC';
+            break;
+        case 'date_asc':
+            $args['orderby'] = 'date';
+            $args['order'] = 'ASC';
+            break;
+        case 'amount_desc':
+            $args['orderby'] = 'meta_value_num';
+            $args['meta_key'] = 'max_amount';
+            $args['order'] = 'DESC';
+            break;
+        case 'amount_asc':
+            $args['orderby'] = 'meta_value_num';
+            $args['meta_key'] = 'max_amount';
+            $args['order'] = 'ASC';
+            break;
+        case 'deadline_asc':
+            $args['orderby'] = 'meta_value';
+            $args['meta_key'] = 'deadline';
+            $args['order'] = 'ASC';
+            break;
+        case 'title_asc':
+            $args['orderby'] = 'title';
+            $args['order'] = 'ASC';
+            break;
+        default:
+            $args['orderby'] = 'date';
+            $args['order'] = 'DESC';
+    }
+
+    // クエリ実行
+    $query = new WP_Query($args);
+    $grants = array();
+    $user_favorites = gi_get_user_favorites();
+
+    if ($query->have_posts()) {
+        while ($query->have_posts()) {
+            $query->the_post();
+            $post_id = get_the_ID();
+
+            // 都道府県取得
+            $prefecture_terms = get_the_terms($post_id, 'grant_prefecture');
+            $prefecture = '';
+            if ($prefecture_terms && !is_wp_error($prefecture_terms)) {
+                $prefecture = $prefecture_terms[0]->name;
+            }
+
+            // カテゴリー取得
+            $category_terms = get_the_terms($post_id, 'grant_category');
+            $main_category = '';
+            $related_categories = array();
+            
+            if ($category_terms && !is_wp_error($category_terms)) {
+                $main_category = $category_terms[0]->name;
+                if (count($category_terms) > 1) {
+                    for ($i = 1; $i < count($category_terms); $i++) {
+                        $related_categories[] = $category_terms[$i]->name;
+                    }
+                }
+            }
+
+            $grants[] = array(
+                'id' => $post_id,
+                'title' => get_the_title(),
+                'excerpt' => gi_safe_excerpt(get_the_excerpt(), 150),
+                'permalink' => get_permalink(),
+                'thumbnail' => get_the_post_thumbnail_url($post_id, 'gi-card-thumb'),
+                'date' => get_the_date('Y-m-d'),
+                'prefecture' => $prefecture,
+                'main_category' => $main_category,
+                'related_categories' => $related_categories,
+                'amount' => gi_safe_number_format(gi_safe_get_meta($post_id, 'max_amount', 0)),
+                'organization' => gi_safe_escape(gi_safe_get_meta($post_id, 'organization')),
+                'deadline' => gi_safe_date_format(gi_safe_get_meta($post_id, 'deadline'), 'Y年m月d日'),
+                'status' => gi_safe_get_meta($post_id, 'status', 'active'),
+                'is_favorite' => in_array($post_id, $user_favorites)
+            );
+        }
+        wp_reset_postdata();
+    }
+
+    // ページネーション情報
+    $pagination = array(
+        'current_page' => $page,
+        'total_pages' => $query->max_num_pages,
+        'total_posts' => $query->found_posts,
+        'posts_per_page' => $posts_per_page
+    );
+
+    // クエリ情報
+    $query_info = array(
+        'search' => $search,
+        'categories' => $categories,
+        'prefectures' => $prefectures,
+        'amount' => $amount,
+        'status' => $status,
+        'sort' => $sort
+    );
+
+    wp_send_json_success(array(
+        'grants' => $grants,
+        'found_posts' => $query->found_posts,
+        'pagination' => $pagination,
+        'query_info' => $query_info,
+        'view' => $view
+    ));
+}
+add_action('wp_ajax_gi_load_grants', 'gi_ajax_load_grants');
+add_action('wp_ajax_nopriv_gi_load_grants', 'gi_ajax_load_grants');
+
+/**
+ * AJAX検索機能（強化版）
+ */
+function gi_ajax_search() {
+    if (!wp_verify_nonce($_POST['nonce'], 'gi_ajax_nonce')) {
+        wp_send_json_error('セキュリティチェックに失敗しました');
+    }
+    
+    $keyword = sanitize_text_field($_POST['keyword'] ?? '');
+    $post_type = sanitize_text_field($_POST['post_type'] ?? 'any');
+    $posts_per_page = intval($_POST['posts_per_page'] ?? 12);
+    
+    $args = array(
+        'post_type' => $post_type === 'any' ? array('grant', 'tool', 'case_study', 'guide', 'grant_tip') : $post_type,
+        'posts_per_page' => $posts_per_page,
+        'post_status' => 'publish',
+        's' => $keyword,
+        'orderby' => 'relevance',
+        'order' => 'DESC'
+    );
+    
+    $query = new WP_Query($args);
+    
+    $results = array();
+    if ($query->have_posts()) {
+        while ($query->have_posts()) {
+            $query->the_post();
+            
+            $post_id = get_the_ID();
+            $post_type_obj = get_post_type_object(get_post_type());
+            
+            $results[] = array(
+                'id' => $post_id,
+                'title' => get_the_title(),
+                'excerpt' => gi_safe_excerpt(get_the_excerpt(), 150),
+                'permalink' => get_permalink(),
+                'thumbnail' => get_the_post_thumbnail_url($post_id, 'medium'),
+                'date' => get_the_date('Y-m-d'),
+                'post_type' => get_post_type(),
+                'post_type_label' => $post_type_obj->labels->singular_name
+            );
+        }
+        wp_reset_postdata();
+    }
+    
+    wp_send_json_success(array(
+        'results' => $results,
+        'found_posts' => $query->found_posts,
+        'keyword' => $keyword,
+        'post_type' => $post_type,
+        'max_num_pages' => $query->max_num_pages
+    ));
+}
+add_action('wp_ajax_gi_search', 'gi_ajax_search');
+add_action('wp_ajax_nopriv_gi_search', 'gi_ajax_search');
+
+/**
+ * お気に入り機能（強化版）
+ */
+function gi_ajax_toggle_favorite() {
+    if (!wp_verify_nonce($_POST['nonce'], 'gi_ajax_nonce')) {
+        wp_send_json_error('セキュリティチェックに失敗しました');
+    }
+    
+    $post_id = intval($_POST['post_id']);
+    $user_id = get_current_user_id();
+    
+    if (!$post_id || !get_post($post_id)) {
+        wp_send_json_error('無効な投稿IDです');
+    }
+    
+    if (!$user_id) {
+        $cookie_name = 'gi_favorites';
+        $favorites = isset($_COOKIE[$cookie_name]) ? array_filter(explode(',', $_COOKIE[$cookie_name])) : array();
+        
+        if (in_array($post_id, $favorites)) {
+            $favorites = array_diff($favorites, array($post_id));
+            $action = 'removed';
+        } else {
+            $favorites[] = $post_id;
+            $action = 'added';
+        }
+        
+        setcookie($cookie_name, implode(',', $favorites), time() + (86400 * 30), '/');
+    } else {
+        $meta_key = 'gi_favorites';
+        $favorites = get_user_meta($user_id, $meta_key, true);
+        if (!is_array($favorites)) $favorites = array();
+        
+        if (in_array($post_id, $favorites)) {
+            $favorites = array_diff($favorites, array($post_id));
+            $action = 'removed';
+        } else {
+            $favorites[] = $post_id;
+            $action = 'added';
+        }
+        
+        update_user_meta($user_id, $meta_key, $favorites);
+    }
+    
+    wp_send_json_success(array(
+        'action' => $action,
+        'post_id' => $post_id,
+        'count' => count($favorites),
+        'message' => $action === 'added' ? 'お気に入りに追加しました' : 'お気に入りから削除しました'
+    ));
+}
+add_action('wp_ajax_gi_toggle_favorite', 'gi_ajax_toggle_favorite');
+add_action('wp_ajax_nopriv_gi_toggle_favorite', 'gi_ajax_toggle_favorite');
+
+/**
+ * お気に入り一覧取得
+ */
+function gi_get_user_favorites($user_id = null) {
+    if (!$user_id) {
+        $user_id = get_current_user_id();
+    }
+    
+    if (!$user_id) {
+        $cookie_name = 'gi_favorites';
+        $favorites = isset($_COOKIE[$cookie_name]) ? array_filter(explode(',', $_COOKIE[$cookie_name])) : array();
+    } else {
+        $favorites = get_user_meta($user_id, 'gi_favorites', true);
+        if (!is_array($favorites)) $favorites = array();
+    }
+    
+    return array_map('intval', $favorites);
+}
+
+/**
+ * 投稿カテゴリー取得
+ */
+function gi_get_post_categories($post_id) {
+    $post_type = get_post_type($post_id);
+    $taxonomy = $post_type . '_category';
+    
+    if (!taxonomy_exists($taxonomy)) {
+        return array();
+    }
+    
+    $terms = get_the_terms($post_id, $taxonomy);
+    if (!$terms || is_wp_error($terms)) {
+        return array();
+    }
+    
+    return array_map(function($term) {
+        return array(
+            'name' => $term->name,
+            'slug' => $term->slug,
+            'link' => get_term_link($term)
+        );
+    }, $terms);
+}
+
+/**
+ * カード表示関数（完全版）
+ */
+function gi_render_grant_card($post_id, $view = 'grid') {
+    if (!$post_id || !get_post($post_id)) {
+        return '';
+    }
+
+    $post = get_post($post_id);
+    $user_favorites = gi_get_user_favorites();
+
+    // 都道府県取得
+    $prefecture_terms = get_the_terms($post_id, 'grant_prefecture');
+    $prefecture = '';
+    if ($prefecture_terms && !is_wp_error($prefecture_terms)) {
+        $prefecture = $prefecture_terms[0]->name;
+    }
+
+    // カテゴリー取得
+    $category_terms = get_the_terms($post_id, 'grant_category');
+    $main_category = '';
+    $related_categories = array();
+    
+    if ($category_terms && !is_wp_error($category_terms)) {
+        $main_category = $category_terms[0]->name;
+        if (count($category_terms) > 1) {
+            for ($i = 1; $i < count($category_terms); $i++) {
+                $related_categories[] = $category_terms[$i]->name;
+            }
+        }
+    }
+
+    // データ取得
+    $data = array(
+        'id' => $post_id,
+        'title' => get_the_title($post_id),
+        'excerpt' => gi_safe_excerpt(get_post_field('post_excerpt', $post_id), 150),
+        'permalink' => get_permalink($post_id),
+        'thumbnail' => get_the_post_thumbnail_url($post_id, 'gi-card-thumb'),
+        'date' => get_the_date('Y-m-d', $post_id),
+        'prefecture' => $prefecture,
+        'main_category' => $main_category,
+        'related_categories' => $related_categories,
+        'amount' => gi_safe_number_format(gi_safe_get_meta($post_id, 'max_amount', 0)),
+        'organization' => gi_safe_escape(gi_safe_get_meta($post_id, 'organization')),
+        'deadline' => gi_safe_date_format(gi_safe_get_meta($post_id, 'deadline'), 'Y年m月d日'),
+        'status' => gi_safe_get_meta($post_id, 'status', 'active'),
+        'is_favorite' => in_array($post_id, $user_favorites)
+    );
+
+    if ($view === 'list') {
+        return gi_render_grant_card_list($data);
+    } else {
+        return gi_render_grant_card_grid($data);
+    }
+}
+
+/**
+ * グリッドカード表示
+ */
+function gi_render_grant_card_grid($grant) {
+    ob_start();
+    ?>
+    <div class="grant-card bg-white rounded-xl shadow-sm border hover:shadow-lg transition-all duration-300 overflow-hidden animate-fade-in-up">
+        <div class="relative">
+            <?php if ($grant['thumbnail']) : ?>
+                <img src="<?php echo gi_safe_url($grant['thumbnail']); ?>" alt="<?php echo gi_safe_attr($grant['title']); ?>" class="w-full h-48 object-cover">
+            <?php else : ?>
+                <div class="w-full h-48 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                    <i class="fas fa-coins text-4xl text-white"></i>
+                </div>
+            <?php endif; ?>
+            
+            <!-- ステータスバッジ -->
+            <div class="absolute top-3 left-3">
+                <?php echo gi_get_status_badge($grant['status']); ?>
+            </div>
+            
+            <!-- お気に入りボタン -->
+            <button class="favorite-btn absolute top-3 right-3 w-8 h-8 bg-white bg-opacity-90 hover:bg-opacity-100 rounded-full flex items-center justify-center transition-all duration-200 <?php echo $grant['is_favorite'] ? 'text-red-500' : 'text-gray-400'; ?>"
+                    data-post-id="<?php echo $grant['id']; ?>">
+                <i class="fas fa-heart text-sm"></i>
+            </button>
+        </div>
+        
+        <div class="p-6">
+            <!-- 都道府県・カテゴリ -->
+            <div class="mb-3">
+                <?php if ($grant['prefecture']) : ?>
+                    <span class="inline-block px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full mr-2 mb-1">
+                        📍 <?php echo gi_safe_escape($grant['prefecture']); ?>
+                    </span>
+                <?php endif; ?>
+                
+                <?php if ($grant['main_category']) : ?>
+                    <span class="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full mb-1">
+                        <?php echo gi_safe_escape($grant['main_category']); ?>
+                    </span>
+                <?php endif; ?>
+                
+                <?php if (!empty($grant['related_categories'])) : ?>
+                    <div class="mt-2 hidden related-categories">
+                        <?php foreach ($grant['related_categories'] as $cat) : ?>
+                            <span class="inline-block px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full mr-1 mb-1">
+                                <?php echo gi_safe_escape($cat); ?>
+                            </span>
+                        <?php endforeach; ?>
+                    </div>
+                    <button class="text-xs text-blue-600 hover:text-blue-800 mt-1 show-more-categories">
+                        関連カテゴリを表示
+                    </button>
+                <?php endif; ?>
+            </div>
+            
+            <!-- タイトル -->
+            <h3 class="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 hover:text-blue-600 transition-colors">
+                <a href="<?php echo gi_safe_url($grant['permalink']); ?>"><?php echo gi_safe_escape($grant['title']); ?></a>
+            </h3>
+            
+            <!-- 金額 -->
+            <div class="flex items-center gap-2 mb-3">
+                <div class="text-2xl font-bold text-blue-600">
+                    <?php echo $grant['amount']; ?>
+                </div>
+                <span class="text-sm text-gray-500">万円</span>
+            </div>
+            
+            <!-- 概要 -->
+            <p class="text-sm text-gray-600 mb-4 line-clamp-3">
+                <?php echo $grant['excerpt']; ?>
+            </p>
+            
+            <!-- 詳細情報 -->
+            <div class="space-y-2 mb-4 text-sm">
+                <?php if ($grant['organization']) : ?>
+                    <div class="flex items-center gap-2 text-gray-600">
+                        <i class="fas fa-building w-4"></i>
+                        <span><?php echo $grant['organization']; ?></span>
+                    </div>
+                <?php endif; ?>
+                
+                <?php if ($grant['deadline']) : ?>
+                    <div class="flex items-center gap-2 text-gray-600">
+                        <i class="fas fa-calendar w-4"></i>
+                        <span>締切: <?php echo $grant['deadline']; ?></span>
+                    </div>
+                <?php endif; ?>
+            </div>
+            
+            <!-- アクションボタン -->
+            <div class="flex gap-2">
+                <a href="<?php echo gi_safe_url($grant['permalink']); ?>" 
+                   class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200">
+                    詳細を見る
+                </a>
+                <button class="px-3 py-2 border border-gray-300 hover:border-gray-400 text-gray-600 hover:text-gray-700 rounded-lg transition-colors duration-200"
+                        title="共有">
+                    <i class="fas fa-share-alt text-sm"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * リストカード表示
+ */
+function gi_render_grant_card_list($grant) {
+    ob_start();
+    ?>
+    <div class="grant-list-item bg-white rounded-xl shadow-sm border hover:shadow-md transition-all duration-300 p-6 animate-fade-in-up">
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- サムネイル -->
+            <div class="lg:w-48 lg:shrink-0">
+                <?php if ($grant['thumbnail']) : ?>
+                    <img src="<?php echo gi_safe_url($grant['thumbnail']); ?>" alt="<?php echo gi_safe_attr($grant['title']); ?>" class="w-full h-32 lg:h-24 object-cover rounded-lg">
+                <?php else : ?>
+                    <div class="w-full h-32 lg:h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-coins text-2xl text-white"></i>
+                    </div>
+                <?php endif; ?>
+            </div>
+            
+            <!-- コンテンツ -->
+            <div class="flex-1">
+                <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                    <div class="flex-1">
+                        <!-- ヘッダー -->
+                        <div class="flex items-center gap-3 mb-3 flex-wrap">
+                            <?php echo gi_get_status_badge($grant['status']); ?>
+                            
+                            <?php if ($grant['prefecture']) : ?>
+                                <span class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">
+                                    📍 <?php echo gi_safe_escape($grant['prefecture']); ?>
+                                </span>
+                            <?php endif; ?>
+                            
+                            <?php if ($grant['main_category']) : ?>
+                                <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                                    <?php echo gi_safe_escape($grant['main_category']); ?>
+                                </span>
+                            <?php endif; ?>
+                            
+                            <button class="favorite-btn text-gray-400 hover:text-red-500 transition-colors <?php echo $grant['is_favorite'] ? 'text-red-500' : ''; ?>"
+                                    data-post-id="<?php echo $grant['id']; ?>">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- タイトル -->
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors">
+                            <a href="<?php echo gi_safe_url($grant['permalink']); ?>"><?php echo gi_safe_escape($grant['title']); ?></a>
+                        </h3>
+                        
+                        <!-- 概要 -->
+                        <p class="text-gray-600 mb-4 line-clamp-2">
+                            <?php echo $grant['excerpt']; ?>
+                        </p>
+                        
+                        <!-- 詳細情報 -->
+                        <div class="flex flex-wrap gap-4 text-sm text-gray-600">
+                            <?php if ($grant['organization']) : ?>
+                                <div class="flex items-center gap-1">
+                                    <i class="fas fa-building"></i>
+                                    <span><?php echo $grant['organization']; ?></span>
+                                </div>
+                            <?php endif; ?>
+                            
+                            <?php if ($grant['deadline']) : ?>
+                                <div class="flex items-center gap-1">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>締切: <?php echo $grant['deadline']; ?></span>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                    <!-- 右側（金額とボタン） -->
+                    <div class="lg:w-48 lg:text-right">
+                        <!-- 金額 -->
+                        <div class="mb-4">
+                            <div class="text-3xl font-bold text-blue-600">
+                                <?php echo $grant['amount']; ?>
+                                <span class="text-lg text-gray-500">万円</span>
+                            </div>
+                        </div>
+                        
+                        <!-- ボタン -->
+                        <div class="flex lg:flex-col gap-2">
+                            <a href="<?php echo gi_safe_url($grant['permalink']); ?>" 
+                               class="flex-1 lg:flex-none bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-4 rounded-lg font-medium transition-colors duration-200">
+                                詳細を見る
+                            </a>
+                            <button class="px-3 py-2 border border-gray-300 hover:border-gray-400 text-gray-600 hover:text-gray-700 rounded-lg transition-colors duration-200"
+                                    title="共有">
+                                <i class="fas fa-share-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * ステータスバッジ取得
+ */
+function gi_get_status_badge($status) {
+    $badges = array(
+        'active' => '<span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">募集中</span>',
+        'upcoming' => '<span class="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">募集予定</span>',
+        'closed' => '<span class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">募集終了</span>'
+    );
+    return $badges[$status] ?? '';
+}
+
+/**
+ * 複数カード表示関数
+ */
+function gi_render_multiple_grants($post_ids, $view = 'grid', $columns = 3) {
+    if (empty($post_ids) || !is_array($post_ids)) {
+        return '';
+    }
+
+    $grid_classes = array(
+        2 => 'grid-cols-1 md:grid-cols-2',
+        3 => 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3',
+        4 => 'grid-cols-1 md:grid-cols-2 xl:grid-cols-4'
+    );
+
+    ob_start();
+    
+    if ($view === 'grid') {
+        $grid_class = $grid_classes[$columns] ?? $grid_classes[3];
+        echo '<div class="grid ' . $grid_class . ' gap-6">';
+        
+        foreach ($post_ids as $post_id) {
+            echo gi_render_grant_card($post_id, 'grid');
+        }
+        
+        echo '</div>';
+    } else {
+        echo '<div class="space-y-4">';
+        
+        foreach ($post_ids as $post_id) {
+            echo gi_render_grant_card($post_id, 'list');
+        }
+        
+        echo '</div>';
+    }
+    
+    return ob_get_clean();
+}
+
+/**
+ * ウィジェットエリア登録
+ */
+function gi_widgets_init() {
+    register_sidebar(array(
+        'name'          => 'メインサイドバー',
+        'id'            => 'sidebar-main',
+        'description'   => 'メインサイドバーエリア',
+        'before_widget' => '<div id="%1$s" class="widget %2$s mb-8">',
+        'after_widget'  => '</div>',
+        'before_title'  => '<h3 class="widget-title text-lg font-semibold mb-4 pb-2 border-b-2 border-emerald-500">',
+        'after_title'   => '</h3>',
+    ));
+    
+    register_sidebar(array(
+        'name'          => 'フッターエリア1',
+        'id'            => 'footer-1',
+        'description'   => 'フッター左側エリア',
+        'before_widget' => '<div id="%1$s" class="widget %2$s mb-6">',
+        'after_widget'  => '</div>',
+        'before_title'  => '<h4 class="widget-title text-base font-semibold mb-3 text-white">',
+        'after_title'   => '</h4>',
+    ));
+    
+    register_sidebar(array(
+        'name'          => 'フッターエリア2',
+        'id'            => 'footer-2',
+        'description'   => 'フッター中央エリア',
+        'before_widget' => '<div id="%1$s" class="widget %2$s mb-6">',
+        'after_widget'  => '</div>',
+        'before_title'  => '<h4 class="widget-title text-base font-semibold mb-3 text-white">',
+        'after_title'   => '</h4>',
+    ));
+    
+    register_sidebar(array(
+        'name'          => 'フッターエリア3',
+        'id'            => 'footer-3',
+        'description'   => 'フッター右側エリア',
+        'before_widget' => '<div id="%1$s" class="widget %2$s mb-6">',
+        'after_widget'  => '</div>',
+        'before_title'  => '<h4 class="widget-title text-base font-semibold mb-3 text-white">',
+        'after_title'   => '</h4>',
+    ));
+}
+add_action('widgets_init', 'gi_widgets_init');
+
+/**
+ * カスタマイザー設定（強化版）
+ */
+function gi_customize_register($wp_customize) {
+    // ヒーローセクション設定
+    $wp_customize->add_section('gi_hero_section', array(
+        'title' => 'ヒーローセクション',
+        'priority' => 30,
+        'description' => 'フロントページのヒーローセクションを設定します'
+    ));
+    
+    // ヒーロータイトル
+    $wp_customize->add_setting('gi_hero_title', array(
+        'default' => 'AI が提案する助成金・補助金情報サイト',
+        'sanitize_callback' => 'sanitize_text_field',
+        'transport' => 'postMessage'
+    ));
+    
+    $wp_customize->add_control('gi_hero_title', array(
+        'label' => 'メインタイトル',
+        'section' => 'gi_hero_section',
+        'type' => 'text'
+    ));
+    
+    // ヒーローサブタイトル
+    $wp_customize->add_setting('gi_hero_subtitle', array(
+        'default' => '最先端のAI技術で、あなたのビジネスに最適な助成金・補助金を瞬時に発見。',
+        'sanitize_callback' => 'sanitize_textarea_field',
+        'transport' => 'postMessage'
+    ));
+    
+    $wp_customize->add_control('gi_hero_subtitle', array(
+        'label' => 'サブタイトル',
+        'section' => 'gi_hero_section',
+        'type' => 'textarea'
+    ));
+    
+    // ヒーロー動画
+    $wp_customize->add_setting('gi_hero_video', array(
+        'default' => '',
+        'sanitize_callback' => 'esc_url_raw'
+    ));
+    
+    $wp_customize->add_control(new WP_Customize_Media_Control($wp_customize, 'gi_hero_video', array(
+        'label' => 'ヒーロー動画',
+        'section' => 'gi_hero_section',
+        'mime_type' => 'video'
+    )));
+    
+    // ヒーローロゴ
+    $wp_customize->add_setting('gi_hero_logo', array(
+        'default' => '',
+        'sanitize_callback' => 'esc_url_raw'
+    ));
+    
+    $wp_customize->add_control(new WP_Customize_Image_Control($wp_customize, 'gi_hero_logo', array(
+        'label' => 'ヒーロー用ロゴ画像',
+        'section' => 'gi_hero_section'
+    )));
+    
+    // CTAボタン設定
+    $wp_customize->add_setting('gi_hero_cta_primary_text', array(
+        'default' => '今すぐ検索開始',
+        'sanitize_callback' => 'sanitize_text_field'
+    ));
+    
+    $wp_customize->add_control('gi_hero_cta_primary_text', array(
+        'label' => 'プライマリCTAテキスト',
+        'section' => 'gi_hero_section',
+        'type' => 'text'
+    ));
+    
+    $wp_customize->add_setting('gi_hero_cta_primary_url', array(
+        'default' => '#search-section',
+        'sanitize_callback' => 'esc_url_raw'
+    ));
+    
+    $wp_customize->add_control('gi_hero_cta_primary_url', array(
+        'label' => 'プライマリCTA URL',
+        'section' => 'gi_hero_section',
+        'type' => 'url'
+    ));
+    
+    // サイト基本設定
+    $wp_customize->add_section('gi_site_settings', array(
+        'title' => 'サイト基本設定',
+        'priority' => 25
+    ));
+    
+    // プライマリカラー
+    $wp_customize->add_setting('gi_primary_color', array(
+        'default' => '#10b981',
+        'sanitize_callback' => 'sanitize_hex_color'
+    ));
+    
+    $wp_customize->add_control(new WP_Customize_Color_Control($wp_customize, 'gi_primary_color', array(
+        'label' => 'プライマリカラー',
+        'section' => 'gi_site_settings'
+    )));
+}
+add_action('customize_register', 'gi_customize_register');
+
+/**
+ * 管理画面カスタマイズ（強化版）
+ */
+function gi_admin_init() {
+    // 管理画面スタイル
+    add_action('admin_head', function() {
+        echo '<style>
+        .gi-admin-notice {
+            border-left: 4px solid #10b981;
+            background: #ecfdf5;
+            padding: 12px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .gi-admin-notice h3 {
+            color: #047857;
+            margin: 0 0 8px 0;
+            font-size: 16px;
+        }
+        .gi-admin-notice p {
+            color: #065f46;
+            margin: 0;
+        }
+        </style>';
+    });
+    
+    // 投稿一覧カラム追加
+    add_filter('manage_grant_posts_columns', 'gi_add_grant_columns');
+    add_action('manage_grant_posts_custom_column', 'gi_grant_column_content', 10, 2);
+}
+add_action('admin_init', 'gi_admin_init');
+
+// 助成金カラム
+function gi_add_grant_columns($columns) {
+    $new_columns = array();
+    foreach ($columns as $key => $value) {
+        $new_columns[$key] = $value;
+        if ($key === 'title') {
+            $new_columns['gi_prefecture'] = '都道府県';
+            $new_columns['gi_amount'] = '金額';
+            $new_columns['gi_organization'] = '実施組織';
+            $new_columns['gi_status'] = 'ステータス';
+        }
+    }
+    return $new_columns;
+}
+
+function gi_grant_column_content($column, $post_id) {
+    switch ($column) {
+        case 'gi_prefecture':
+            $prefecture_terms = get_the_terms($post_id, 'grant_prefecture');
+            if ($prefecture_terms && !is_wp_error($prefecture_terms)) {
+                echo gi_safe_escape($prefecture_terms[0]->name);
+            } else {
+                echo '－';
+            }
+            break;
+        case 'gi_amount':
+            $amount = gi_safe_get_meta($post_id, 'max_amount');
+            echo $amount ? gi_safe_number_format($amount) . '万円' : '－';
+            break;
+        case 'gi_organization':
+            echo gi_safe_escape(gi_safe_get_meta($post_id, 'organization', '－'));
+            break;
+        case 'gi_status':
+            $status = gi_safe_get_meta($post_id, 'status', 'active');
+            $status_labels = array(
+                'active' => '<span style="color: #059669;">募集中</span>',
+                'upcoming' => '<span style="color: #d97706;">募集予定</span>',
+                'closed' => '<span style="color: #dc2626;">募集終了</span>'
+            );
+            echo $status_labels[$status] ?? $status;
+            break;
+    }
+}
+
+/**
+ * パフォーマンス最適化
+ */
+function gi_performance_optimizations() {
+    // 画像の遅延読み込み
+    add_filter('wp_lazy_loading_enabled', '__return_true');
+    
+    // 不要なスクリプトの削除
+    add_action('wp_enqueue_scripts', 'gi_dequeue_unnecessary_scripts', 100);
+}
+add_action('init', 'gi_performance_optimizations');
+
+function gi_dequeue_unnecessary_scripts() {
+    if (!is_admin()) {
+        // 絵文字スクリプトの削除
+        remove_action('wp_head', 'print_emoji_detection_script', 7);
+        remove_action('wp_print_styles', 'print_emoji_styles');
+        
+        // 未使用のスクリプトの削除
+        if (!is_singular() || !comments_open()) {
+            wp_dequeue_script('comment-reply');
+        }
+    }
+}
+
+/**
+ * セキュリティ強化（テーマエディター有効版）
+ */
+function gi_security_enhancements() {
+    // WordPressバージョンの隠蔽
+    remove_action('wp_head', 'wp_generator');
+    
+    // 不要なヘッダー情報の削除
+    remove_action('wp_head', 'rsd_link');
+    remove_action('wp_head', 'wlwmanifest_link');
+    remove_action('wp_head', 'wp_shortlink_wp_head');
+    
+    // XMLRPCの無効化
+    add_filter('xmlrpc_enabled', '__return_false');
+    
+    // ログイン試行回数の制限
+    add_action('wp_login_failed', 'gi_login_failed');
+    add_filter('authenticate', 'gi_check_login_attempts', 30, 3);
+}
+add_action('init', 'gi_security_enhancements');
+
+/**
+ * ログイン失敗の記録
+ */
+function gi_login_failed($username) {
+    $ip = $_SERVER['REMOTE_ADDR'];
+    $attempts = get_option('gi_login_attempts', []);
+    
+    if (!isset($attempts[$ip])) {
+        $attempts[$ip] = [];
+    }
+    
+    $attempts[$ip][] = time();
+    
+    // 1時間以上前の試行を削除
+    $attempts[$ip] = array_filter($attempts[$ip], function($time) {
+        return $time > (time() - 3600);
+    });
+    
+    update_option('gi_login_attempts', $attempts);
+}
+
+/**
+ * ログイン試行チェック
+ */
+function gi_check_login_attempts($user, $username, $password) {
+    $ip = $_SERVER['REMOTE_ADDR'];
+    $attempts = get_option('gi_login_attempts', []);
+    
+    if (isset($attempts[$ip]) && count($attempts[$ip]) >= 5) {
+        return new WP_Error('too_many_attempts', 
+            __('Too many login attempts. Please try again later.', 'grant-insight'));
+    }
+    
+    return $user;
+}
+
+/**
+ * テーマの最終初期化
+ */
+function gi_final_init() {
+    // 初期化完了ログ
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        error_log('Grant Insight Theme v6.2: Initialization completed successfully');
+    }
+}
+add_action('wp_loaded', 'gi_final_init', 999);
+
+/**
+ * クリーンアップ処理
+ */
+function gi_theme_cleanup() {
+    // 一時的なオプションの削除
+    delete_option('gi_login_attempts');
+    
+    // キャッシュのクリア
+    wp_cache_flush();
+}
+add_action('switch_theme', 'gi_theme_cleanup');
+
+/*
+ * ===================================================================
+ * Grant Insight Perfect - Tailwind CSS Play CDN Edition v6.2 END
+ * ===================================================================
+ * 
+ * 【完全対応機能】
+ * - Tailwind CSS CDN統合管理
+ * - カスタム投稿タイプ（5種類）
+ * - カスタムタクソノミー（都道府県対応4種類）
+ * - 都道府県フィルター機能
+ * - デフォルトデータ自動挿入
+ * - セキュリティヘルパー関数群
+ * - AJAX検索・お気に入り機能
+ * - 完全なカード表示システム
+ * - 動的パス取得機能
+ * - カスタマイザー設定
+ * - 管理画面カスタマイズ
+ * - パフォーマンス最適化
+ * - セキュリティ対策（テーマエディター有効）
+ * 
+ * 作成者: 中澤圭志様専用版
+ * 最終更新: 2025年1月
+ * バージョン: 6.2 Perfect Complete Edition
+ * テーマエディター: 完全対応
+ * 都道府県フィルター: 完全対応
+ * AJAX機能: 完全実装
+ * カード表示: 完全実装
+ */
+?>
