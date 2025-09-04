@@ -15,204 +15,10 @@
         initTailwindCTAOptimization();
         initTailwindUserEngagement();
         initTailwindComponents();
-        initAIChatbot(); // 🆕 AI Chatbot初期化を追加
+        // AI Chatbot機能は削除されました
     });
 
-    /**
-     * 🆕 AI Chatbot完全初期化関数
-     */
-    function initAIChatbot() {
-        console.log('AI Chatbot初期化開始...');
-        
-        const chatbotToggle = document.querySelector('.chatbot-toggle');
-        const chatbotModal = document.querySelector('.chatbot-modal');
-        const chatbotClose = document.querySelector('.chatbot-close');
-        const chatbotInput = document.querySelector('.chatbot-input');
-        const chatbotSend = document.querySelector('.chatbot-send');
-        const chatbotMessages = document.querySelector('.chatbot-messages');
-
-        if (!chatbotToggle || !chatbotModal) {
-            console.warn('AI Chatbot要素が見つかりません');
-            return;
-        }
-
-        console.log('AI Chatbot要素が見つかりました');
-
-        // チャットボット開閉機能
-        chatbotToggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            console.log('チャットボットトグルクリック');
-            
-            if (chatbotModal.classList.contains('active')) {
-                closeChatbot();
-            } else {
-                openChatbot();
-            }
-        });
-
-        // チャットボット閉じるボタン
-        if (chatbotClose) {
-            chatbotClose.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                closeChatbot();
-            });
-        }
-
-        // モーダル外クリックで閉じる
-        document.addEventListener('click', function(e) {
-            if (chatbotModal.classList.contains('active') && 
-                !chatbotModal.contains(e.target) && 
-                !chatbotToggle.contains(e.target)) {
-                closeChatbot();
-            }
-        });
-
-        // ESCキーで閉じる
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && chatbotModal.classList.contains('active')) {
-                closeChatbot();
-            }
-        });
-
-        // メッセージ送信機能
-        if (chatbotSend && chatbotInput) {
-            chatbotSend.addEventListener('click', function(e) {
-                e.preventDefault();
-                sendMessage();
-            });
-
-            chatbotInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    sendMessage();
-                }
-            });
-        }
-
-        // チャットボット開く関数
-        function openChatbot() {
-            chatbotModal.classList.add('active');
-            if (chatbotInput) {
-                setTimeout(() => {
-                    chatbotInput.focus();
-                }, 300);
-            }
-            
-            // 通知バッジを隠す
-            const notification = document.querySelector('.chatbot-notification');
-            if (notification) {
-                notification.style.display = 'none';
-            }
-            
-            console.log('チャットボット opened');
-        }
-
-        // チャットボット閉じる関数
-        function closeChatbot() {
-            chatbotModal.classList.remove('active');
-            console.log('チャットボット closed');
-        }
-
-        // メッセージ送信関数
-        function sendMessage() {
-            if (!chatbotInput || !chatbotMessages) return;
-            
-            const message = chatbotInput.value.trim();
-            if (!message) return;
-
-            console.log('メッセージ送信:', message);
-
-            // ユーザーメッセージを追加
-            addMessage(message, 'user');
-            
-            // 入力フィールドをクリア
-            chatbotInput.value = '';
-            
-            // ローディング表示
-            showTypingIndicator();
-            
-            // ボタンを一時的に無効化
-            chatbotSend.disabled = true;
-            
-            // AI応答をシミュレート（実際のAPI連携時は置き換え）
-            setTimeout(() => {
-                hideTypingIndicator();
-                chatbotSend.disabled = false;
-                
-                const responses = getAIResponse(message);
-                addMessage(responses, 'bot');
-            }, 1500);
-        }
-
-        // メッセージを追加する関数
-        function addMessage(text, sender) {
-            if (!chatbotMessages) return;
-            
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}`;
-            messageDiv.textContent = text;
-            
-            chatbotMessages.appendChild(messageDiv);
-            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
-            
-            console.log(`${sender}メッセージ追加:`, text);
-        }
-
-        // タイピングインジケーター表示
-        function showTypingIndicator() {
-            if (!chatbotMessages) return;
-            
-            const typingDiv = document.createElement('div');
-            typingDiv.className = 'typing-indicator';
-            typingDiv.innerHTML = `
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-            `;
-            
-            chatbotMessages.appendChild(typingDiv);
-            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
-        }
-
-        // タイピングインジケーター非表示
-        function hideTypingIndicator() {
-            if (!chatbotMessages) return;
-            
-            const typingIndicator = chatbotMessages.querySelector('.typing-indicator');
-            if (typingIndicator) {
-                typingIndicator.remove();
-            }
-        }
-
-        // AI応答生成（実際のAPI連携時は置き換え）
-        function getAIResponse(userMessage) {
-            const responses = {
-                'こんにちは': 'こんにちは！助成金に関するご質問がございましたら、お気軽にお聞かせください。',
-                '助成金': '助成金についてお調べですね。どのような用途の助成金をお探しでしょうか？事業拡大、研究開発、雇用創出など、具体的な目的を教えてください。',
-                '補助金': '補助金制度について説明いたします。補助金は返済不要の資金支援で、様々な条件があります。どのような分野の補助金に興味がおありですか？',
-                '申請': '助成金・補助金の申請についてですね。申請には事前準備が重要です。必要書類の準備や申請期限の確認など、具体的にお知りになりたいことはありますか？',
-                '条件': '助成金・補助金には様々な条件があります。事業規模、業種、地域、用途などによって異なります。どのような条件について詳しく知りたいですか？',
-                '金額': '助成金・補助金の金額は制度によって大きく異なります。数万円から数億円まで幅広くあります。どのような用途でお考えでしょうか？',
-                'ありがとう': 'どういたしまして！他にも助成金や補助金について疑問がございましたら、いつでもお声かけください。',
-                'さようなら': 'ありがとうございました！また何かご質問がございましたら、お気軽にご相談ください。'
-            };
-
-            // キーワードマッチング
-            for (let keyword in responses) {
-                if (userMessage.includes(keyword)) {
-                    return responses[keyword];
-                }
-            }
-
-            // デフォルト応答
-            return 'ご質問ありがとうございます。助成金・補助金に関する詳しい情報については、具体的なご質問をいただけますと、より詳細にお答えできます。例えば「IT導入補助金について教えて」や「創業時に使える助成金は？」などお聞かせください。';
-        }
-
-        console.log('AI Chatbot初期化完了');
-    }
+    // AI Chatbot機能は削除されました（ユーザー要望により）
 
     /**
      * Tailwind CSS対応モバイルメニューの初期化
@@ -589,6 +395,144 @@
     }
 
     /**
+     * カテゴリーフィルタリング最適化
+     */
+    function initCategoryFiltering() {
+        // カテゴリー選択UI
+        const categoryFilters = $('.category-filter-checkbox, input[name="category[]"]');
+        const prefectureFilters = $('.prefecture-checkbox, input[name="prefecture[]"]');
+        const amountRangeSlider = $('#amount-range-slider');
+        const activeFiltersDisplay = $('#active-filters');
+        
+        // チェックボックス変更時のリアルタイム更新
+        categoryFilters.on('change', function() {
+            updateActiveFilters();
+            updateSearchResultsWithFilters();
+        });
+        
+        prefectureFilters.on('change', function() {
+            updateActiveFilters();
+            updateSearchResultsWithFilters();
+        });
+        
+        // アクティブフィルター表示更新
+        function updateActiveFilters() {
+            const activeFilters = [];
+            
+            // カテゴリーフィルター収集
+            categoryFilters.filter(':checked').each(function() {
+                activeFilters.push({
+                    type: 'category',
+                    value: $(this).val(),
+                    label: $(this).next('label').text() || $(this).val()
+                });
+            });
+            
+            // 都道府県フィルター収集
+            prefectureFilters.filter(':checked').each(function() {
+                activeFilters.push({
+                    type: 'prefecture',
+                    value: $(this).val(),
+                    label: $(this).next('label').text() || $(this).val()
+                });
+            });
+            
+            // アクティブフィルター表示
+            if (activeFilters.length > 0) {
+                let html = '<div class="flex flex-wrap gap-2 mb-4">';
+                activeFilters.forEach(filter => {
+                    const colorClass = filter.type === 'category' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700';
+                    html += `
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${colorClass}">
+                            ${filter.label}
+                            <button type="button" class="ml-2 hover:text-red-500 remove-filter" data-type="${filter.type}" data-value="${filter.value}">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </span>
+                    `;
+                });
+                html += '</div>';
+                activeFiltersDisplay.html(html).removeClass('hidden');
+            } else {
+                activeFiltersDisplay.addClass('hidden');
+            }
+        }
+        
+        // フィルター削除ボタン
+        $(document).on('click', '.remove-filter', function() {
+            const type = $(this).data('type');
+            const value = $(this).data('value');
+            
+            if (type === 'category') {
+                categoryFilters.filter('[value="' + value + '"]').prop('checked', false);
+            } else if (type === 'prefecture') {
+                prefectureFilters.filter('[value="' + value + '"]').prop('checked', false);
+            }
+            
+            updateActiveFilters();
+            updateSearchResultsWithFilters();
+        });
+        
+        // フィルター付き検索結果更新
+        function updateSearchResultsWithFilters() {
+            const categories = [];
+            const prefectures = [];
+            
+            categoryFilters.filter(':checked').each(function() {
+                categories.push($(this).val());
+            });
+            
+            prefectureFilters.filter(':checked').each(function() {
+                prefectures.push($(this).val());
+            });
+            
+            // AJAX検索呼び出し
+            if (typeof gi_ajax !== 'undefined') {
+                $.ajax({
+                    url: gi_ajax.ajax_url,
+                    type: 'POST',
+                    data: {
+                        action: 'gi_search',
+                        categories: categories,
+                        prefectures: prefectures,
+                        search_term: $('#search-input').val() || '',
+                        nonce: gi_ajax.nonce
+                    },
+                    beforeSend: function() {
+                        $('#search-results-container').addClass('opacity-50');
+                        $('#filter-loading').removeClass('hidden');
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#search-results-container').html(response.data.html);
+                            $('#results-count').text(response.data.total);
+                        }
+                        $('#search-results-container').removeClass('opacity-50');
+                        $('#filter-loading').addClass('hidden');
+                    },
+                    error: function() {
+                        console.error('フィルタリング失敗');
+                        $('#filter-loading').addClass('hidden');
+                    }
+                });
+            }
+        }
+        
+        // すべてクリアボタン
+        $('#clear-all-filters').on('click', function() {
+            categoryFilters.prop('checked', false);
+            prefectureFilters.prop('checked', false);
+            updateActiveFilters();
+            updateSearchResultsWithFilters();
+        });
+    }
+    
+    // 検索エンハンスメント初期化に追加
+    if ($('.category-filter-checkbox').length > 0 || $('input[name="category[]"]').length > 0) {
+        initCategoryFiltering();
+    }
+    
+    /**
      * Tailwind対応検索結果更新
      */
     function updateTailwindSearchResults() {
@@ -615,13 +559,22 @@
 
         if (typeof gi_ajax === 'undefined') {
             console.error('gi_ajax is not defined');
-            return;
+            // Fallback: try to get ajax url from WordPress
+            if (typeof ajaxurl !== 'undefined') {
+                gi_ajax = {
+                    ajax_url: ajaxurl,
+                    nonce: ''
+                };
+            } else {
+                console.error('No AJAX URL available');
+                return;
+            }
         }
 
         $.ajax({
             url: gi_ajax.ajax_url,
             type: 'POST',
-            data: formData + '&action=advanced_search&nonce=' + gi_ajax.nonce,
+            data: formData + '&action=gi_search&nonce=' + (gi_ajax.nonce || ''),
             beforeSend: function() {
                 const containers = $('#search-results-container, #results-preview, #results-grid');
                 containers.addClass('opacity-50 pointer-events-none').html(`

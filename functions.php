@@ -2426,6 +2426,440 @@ function gi_theme_cleanup() {
 }
 add_action('switch_theme', 'gi_theme_cleanup');
 
+/**
+ * ========================================
+ * NEWS AND SEARCH ENHANCEMENT FUNCTIONS
+ * ========================================
+ */
+
+/**
+ * 最新ニュース取得関数
+ * 重要度に基づいてソートされた最新ニュースを取得
+ */
+function gi_get_latest_news($args = array()) {
+    $defaults = array(
+        'posts_per_page' => 6,
+        'orderby' => 'date',
+        'order' => 'DESC',
+        'post_type' => 'post',
+        'post_status' => 'publish',
+        'meta_query' => array(
+            'relation' => 'OR',
+            array(
+                'key' => 'is_important_news',
+                'value' => '1',
+                'compare' => '='
+            ),
+            array(
+                'key' => 'is_important_news',
+                'compare' => 'NOT EXISTS'
+            )
+        )
+    );
+    
+    $args = wp_parse_args($args, $defaults);
+    
+    // 重要なニュースを優先
+    $important_news = get_posts(array(
+        'post_type' => 'post',
+        'posts_per_page' => 2,
+        'meta_key' => 'is_important_news',
+        'meta_value' => '1',
+        'orderby' => 'date',
+        'order' => 'DESC'
+    ));
+    
+    // 通常のニュース
+    $regular_count = max(0, $args['posts_per_page'] - count($important_news));
+    $regular_news = array();
+    
+    if ($regular_count > 0) {
+        $regular_news = get_posts(array(
+            'post_type' => 'post',
+            'posts_per_page' => $regular_count,
+            'meta_query' => array(
+                array(
+                    'key' => 'is_important_news',
+                    'compare' => 'NOT EXISTS'
+                )
+            ),
+            'orderby' => 'date',
+            'order' => 'DESC'
+        ));
+    }
+    
+    return array_merge($important_news, $regular_news);
+}
+
+/**
+ * 重要ニュース設定用カスタムフィールド追加
+ */
+function gi_add_news_importance_field() {
+    add_meta_box(
+        'gi_news_importance',
+        '重要度設定',
+        'gi_news_importance_callback',
+        'post',
+        'side',
+        'high'
+    );
+}
+add_action('add_meta_boxes', 'gi_add_news_importance_field');
+
+function gi_news_importance_callback($post) {
+    wp_nonce_field('gi_news_importance_nonce', 'gi_news_importance_nonce');
+    $value = get_post_meta($post->ID, 'is_important_news', true);
+    ?>
+    <label for="is_important_news">
+        <input type="checkbox" name="is_important_news" id="is_important_news" value="1" <?php checked($value, '1'); ?> />
+        重要なお知らせとして表示
+    </label>
+    <p class="description">チェックすると、ニュース一覧の上部に優先表示されます。</p>
+    <?php
+}
+
+function gi_save_news_importance($post_id) {
+    if (!isset($_POST['gi_news_importance_nonce']) || 
+        !wp_verify_nonce($_POST['gi_news_importance_nonce'], 'gi_news_importance_nonce')) {
+        return;
+    }
+    
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+    
+    if (!current_user_can('edit_post', $post_id)) {
+        return;
+    }
+    
+    if (isset($_POST['is_important_news'])) {
+        update_post_meta($post_id, 'is_important_news', '1');
+    } else {
+        delete_post_meta($post_id, 'is_important_news');
+    }
+}
+add_action('save_post', 'gi_save_news_importance');
+
+/**
+ * 高度な検索機能の強化
+ * 複数の投稿タイプとカスタムフィールドを対象とした統合検索
+ */
+function gi_enhanced_search_query($search_term, $filters = array()) {
+    global $wpdb;
+    
+    $defaults = array(
+        'post_types' => array('grant', 'tool', 'case_study', 'guide', 'post'),
+        'per_page' => 20,
+        'orderby' => 'relevance',
+        'region' => '',
+        'category' => '',
+        'amount_min' => 0,
+        'amount_max' => PHP_INT_MAX,
+        'target_industry' => '',
+        'page' => 1
+    );
+    
+    $filters = wp_parse_args($filters, $defaults);
+    
+    // 基本クエリ引数
+    $query_args = array(
+        'post_type' => $filters['post_types'],
+        'posts_per_page' => $filters['per_page'],
+        'paged' => $filters['page'],
+        's' => $search_term,
+        'post_status' => 'publish',
+    );
+    
+    // メタクエリの構築
+    $meta_query = array('relation' => 'AND');
+    
+    // 金額範囲フィルター
+    if ($filters['amount_min'] > 0 || $filters['amount_max'] < PHP_INT_MAX) {
+        $meta_query[] = array(
+            'key' => 'grant_amount',
+            'value' => array($filters['amount_min'], $filters['amount_max']),
+            'type' => 'NUMERIC',
+            'compare' => 'BETWEEN'
+        );
+    }
+    
+    // 対象業種フィルター
+    if (!empty($filters['target_industry'])) {
+        $meta_query[] = array(
+            'key' => 'target_industry',
+            'value' => $filters['target_industry'],
+            'compare' => 'LIKE'
+        );
+    }
+    
+    if (count($meta_query) > 1) {
+        $query_args['meta_query'] = $meta_query;
+    }
+    
+    // タクソノミークエリ
+    $tax_query = array('relation' => 'AND');
+    
+    // 地域フィルター（都道府県）
+    if (!empty($filters['region'])) {
+        $tax_query[] = array(
+            'taxonomy' => 'grant_prefecture',
+            'field' => 'slug',
+            'terms' => $filters['region']
+        );
+    }
+    
+    // カテゴリフィルター
+    if (!empty($filters['category'])) {
+        $tax_query[] = array(
+            'taxonomy' => 'grant_category',
+            'field' => 'slug',
+            'terms' => $filters['category']
+        );
+    }
+    
+    if (count($tax_query) > 1) {
+        $query_args['tax_query'] = $tax_query;
+    }
+    
+    // カスタム並び替え
+    if ($filters['orderby'] === 'relevance') {
+        $query_args['orderby'] = 'relevance date';
+        $query_args['order'] = 'DESC';
+    } elseif ($filters['orderby'] === 'amount') {
+        $query_args['orderby'] = 'meta_value_num';
+        $query_args['meta_key'] = 'grant_amount';
+        $query_args['order'] = 'DESC';
+    } else {
+        $query_args['orderby'] = 'date';
+        $query_args['order'] = 'DESC';
+    }
+    
+    // クエリ実行
+    $search_query = new WP_Query($query_args);
+    
+    return array(
+        'posts' => $search_query->posts,
+        'total' => $search_query->found_posts,
+        'pages' => $search_query->max_num_pages,
+        'current_page' => $filters['page']
+    );
+}
+
+/**
+ * AJAX検索ハンドラー
+ * フロントエンドからの検索リクエストを処理
+ */
+function gi_ajax_search_handler() {
+    check_ajax_referer('gi_ajax_nonce', 'nonce');
+    
+    $search_term = sanitize_text_field($_POST['search_term'] ?? '');
+    $filters = array(
+        'post_types' => $_POST['post_types'] ?? array('grant'),
+        'region' => sanitize_text_field($_POST['region'] ?? ''),
+        'category' => sanitize_text_field($_POST['category'] ?? ''),
+        'amount_min' => intval($_POST['amount_min'] ?? 0),
+        'amount_max' => intval($_POST['amount_max'] ?? PHP_INT_MAX),
+        'page' => intval($_POST['page'] ?? 1)
+    );
+    
+    $results = gi_enhanced_search_query($search_term, $filters);
+    
+    // HTML生成
+    ob_start();
+    
+    if (!empty($results['posts'])) {
+        foreach ($results['posts'] as $post) {
+            setup_postdata($post);
+            ?>
+            <div class="search-result-item bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+                <h3 class="text-xl font-bold mb-2">
+                    <a href="<?php echo get_permalink($post->ID); ?>" class="text-blue-600 hover:text-blue-800">
+                        <?php echo esc_html($post->post_title); ?>
+                    </a>
+                </h3>
+                <p class="text-gray-600 mb-2">
+                    <?php echo wp_trim_words($post->post_content, 30); ?>
+                </p>
+                <?php if (get_post_type($post) === 'grant') : 
+                    $amount = get_post_meta($post->ID, 'grant_amount', true);
+                    $region = wp_get_post_terms($post->ID, 'grant_prefecture', array('fields' => 'names'));
+                ?>
+                <div class="flex gap-4 text-sm text-gray-500">
+                    <?php if ($amount) : ?>
+                    <span><i class="fas fa-yen-sign"></i> 最大<?php echo number_format($amount); ?>円</span>
+                    <?php endif; ?>
+                    <?php if (!empty($region)) : ?>
+                    <span><i class="fas fa-map-marker-alt"></i> <?php echo implode(', ', $region); ?></span>
+                    <?php endif; ?>
+                </div>
+                <?php endif; ?>
+            </div>
+            <?php
+        }
+        wp_reset_postdata();
+    } else {
+        ?>
+        <div class="text-center py-8">
+            <p class="text-gray-600">検索条件に一致する結果が見つかりませんでした。</p>
+            <p class="text-sm text-gray-500 mt-2">別のキーワードや条件でお試しください。</p>
+        </div>
+        <?php
+    }
+    
+    $html = ob_get_clean();
+    
+    wp_send_json_success(array(
+        'html' => $html,
+        'total' => $results['total'],
+        'pages' => $results['pages'],
+        'current_page' => $results['current_page']
+    ));
+}
+add_action('wp_ajax_gi_search', 'gi_ajax_search_handler');
+add_action('wp_ajax_nopriv_gi_search', 'gi_ajax_search_handler');
+
+/**
+ * 都道府県データの自動セットアップ
+ * 47都道府県と全国対応のデータを初期化
+ */
+function gi_setup_prefecture_taxonomy_data() {
+    $prefectures = array(
+        '全国対応',
+        '北海道', '青森県', '岩手県', '宮城県', '秋田県', '山形県', '福島県',
+        '茨城県', '栃木県', '群馬県', '埼玉県', '千葉県', '東京都', '神奈川県',
+        '新潟県', '富山県', '石川県', '福井県', '山梨県', '長野県', '岐阜県', '静岡県', '愛知県',
+        '三重県', '滋賀県', '京都府', '大阪府', '兵庫県', '奈良県', '和歌山県',
+        '鳥取県', '島根県', '岡山県', '広島県', '山口県',
+        '徳島県', '香川県', '愛媛県', '高知県',
+        '福岡県', '佐賀県', '長崎県', '熊本県', '大分県', '宮崎県', '鹿児島県', '沖縄県'
+    );
+    
+    foreach ($prefectures as $prefecture) {
+        $term = term_exists($prefecture, 'grant_prefecture');
+        if (!$term) {
+            wp_insert_term($prefecture, 'grant_prefecture', array(
+                'description' => $prefecture . 'の助成金・補助金情報'
+            ));
+        }
+    }
+    
+    // サンプル助成金データの投入（テスト用）
+    gi_insert_sample_grants_with_prefectures();
+}
+
+/**
+ * サンプル助成金データの投入（都道府県付き）
+ */
+function gi_insert_sample_grants_with_prefectures() {
+    $sample_grants = array(
+        array(
+            'title' => 'IT導入補助金2024',
+            'prefecture' => '全国対応',
+            'amount' => 4500000,
+            'category' => 'IT・デジタル化'
+        ),
+        array(
+            'title' => '東京都中小企業DX推進補助金',
+            'prefecture' => '東京都',
+            'amount' => 3000000,
+            'category' => 'IT・デジタル化'
+        ),
+        array(
+            'title' => '大阪府ものづくり補助金',
+            'prefecture' => '大阪府',
+            'amount' => 10000000,
+            'category' => 'ものづくり'
+        ),
+        array(
+            'title' => '愛知県創業支援補助金',
+            'prefecture' => '愛知県',
+            'amount' => 2000000,
+            'category' => '創業・起業'
+        ),
+        array(
+            'title' => '福岡県雇用促進助成金',
+            'prefecture' => '福岡県',
+            'amount' => 1500000,
+            'category' => '雇用・人材育成'
+        )
+    );
+    
+    foreach ($sample_grants as $grant_data) {
+        // 既存の投稿をチェック
+        $existing = get_page_by_title($grant_data['title'], OBJECT, 'grant');
+        if (!$existing) {
+            $post_id = wp_insert_post(array(
+                'post_title' => $grant_data['title'],
+                'post_content' => $grant_data['title'] . 'の詳細情報です。この助成金は' . $grant_data['category'] . '分野の企業様を対象としています。',
+                'post_type' => 'grant',
+                'post_status' => 'publish',
+                'meta_input' => array(
+                    'grant_amount' => $grant_data['amount'],
+                    'grant_deadline' => date('Y-m-d', strtotime('+3 months')),
+                    'grant_target' => '中小企業',
+                    'grant_application_url' => '#'
+                )
+            ));
+            
+            if ($post_id && !is_wp_error($post_id)) {
+                // 都道府県を設定
+                $prefecture_term = get_term_by('name', $grant_data['prefecture'], 'grant_prefecture');
+                if ($prefecture_term) {
+                    wp_set_post_terms($post_id, array($prefecture_term->term_id), 'grant_prefecture');
+                }
+                
+                // カテゴリーを設定
+                $category_term = get_term_by('name', $grant_data['category'], 'grant_category');
+                if (!$category_term) {
+                    $new_cat = wp_insert_term($grant_data['category'], 'grant_category');
+                    if (!is_wp_error($new_cat)) {
+                        wp_set_post_terms($post_id, array($new_cat['term_id']), 'grant_category');
+                    }
+                } else {
+                    wp_set_post_terms($post_id, array($category_term->term_id), 'grant_category');
+                }
+            }
+        }
+    }
+}
+// テーマ有効化時に実行
+add_action('after_switch_theme', 'gi_setup_prefecture_taxonomy_data');
+
+// 管理画面で都道府県データを初期化するボタン
+function gi_add_prefecture_init_button() {
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+    
+    if (isset($_POST['init_prefecture_data']) && wp_verify_nonce($_POST['prefecture_nonce'], 'init_prefecture')) {
+        gi_setup_prefecture_taxonomy_data();
+        echo '<div class="notice notice-success"><p>都道府県データを初期化しました。</p></div>';
+    }
+    
+    ?>
+    <div class="wrap">
+        <h2>都道府県データ初期化</h2>
+        <form method="post">
+            <?php wp_nonce_field('init_prefecture', 'prefecture_nonce'); ?>
+            <p>助成金の都道府県データとサンプルデータを初期化します。</p>
+            <input type="submit" name="init_prefecture_data" class="button button-primary" value="都道府県データを初期化" />
+        </form>
+    </div>
+    <?php
+}
+
+// 管理メニューに追加
+function gi_add_admin_menu() {
+    add_management_page(
+        '都道府県データ初期化',
+        '都道府県データ初期化',
+        'manage_options',
+        'gi-prefecture-init',
+        'gi_add_prefecture_init_button'
+    );
+}
+add_action('admin_menu', 'gi_add_admin_menu');
+
 /*
  * ===================================================================
  * Grant Insight Perfect - Tailwind CSS Play CDN Edition v6.2 END
