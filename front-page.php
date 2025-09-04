@@ -9,75 +9,7 @@
 
 get_header(); ?>
 
-<!-- Tailwind CSS Play CDN Integration -->
-<script src="https://cdn.tailwindcss.com/3.4.0"></script>
-<script>
-    tailwind.config = {
-        theme: {
-            extend: {
-                colors: {
-                    primary: {
-                        50: '#f0f9ff',
-                        100: '#e0f2fe',
-                        500: '#0ea5e9',
-                        600: '#0284c7',
-                        700: '#0369a1'
-                    },
-                    emerald: {
-                        50: '#ecfdf5',
-                        100: '#d1fae5',
-                        500: '#10b981',
-                        600: '#059669',
-                        700: '#047857'
-                    },
-                    orange: {
-                        50: '#fff7ed',
-                        100: '#ffedd5',
-                        500: '#f97316',
-                        600: '#ea580c',
-                        700: '#c2410c'
-                    },
-                    red: {
-                        50: '#fef2f2',
-                        100: '#fee2e2',
-                        600: '#dc2626',
-                        700: '#b91c1c'
-                    }
-                },
-                animation: {
-                    'fade-in': 'fadeIn 0.6s ease-out',
-                    'slide-up': 'slideUp 0.8s ease-out',
-                    'pulse-gentle': 'pulseGentle 2s ease-in-out infinite',
-                    'bounce-gentle': 'bounceGentle 1s ease-out',
-                    'scale-in': 'scaleIn 0.5s ease-out'
-                },
-                keyframes: {
-                    fadeIn: {
-                        '0%': { opacity: '0' },
-                        '100%': { opacity: '1' }
-                    },
-                    slideUp: {
-                        '0%': { opacity: '0', transform: 'translateY(30px)' },
-                        '100%': { opacity: '1', transform: 'translateY(0)' }
-                    },
-                    pulseGentle: {
-                        '0%, 100%': { opacity: '1' },
-                        '50%': { opacity: '0.8' }
-                    },
-                    bounceGentle: {
-                        '0%': { transform: 'scale(0.95)' },
-                        '50%': { transform: 'scale(1.02)' },
-                        '100%': { transform: 'scale(1)' }
-                    },
-                    scaleIn: {
-                        '0%': { opacity: '0', transform: 'scale(0.9)' },
-                        '100%': { opacity: '1', transform: 'scale(1)' }
-                    }
-                }
-            }
-        }
-    }
-</script>
+<!-- Tailwind is globally enqueued and configured in functions.php. Removed duplicate CDN/config to avoid conflicts. -->
 
 <main id="main" class="site-main bg-gradient-to-b from-gray-50 to-white" role="main">
 

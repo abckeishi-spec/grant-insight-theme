@@ -19,9 +19,9 @@ if (!defined('ABSPATH')) {
 
 get_header(); ?>
 
-<div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+<div class="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50">
     <!-- ヒーローセクション -->
-    <section class="relative bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white py-16 md:py-24">
+    <section class="relative bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white py-16 md:py-24">
         <div class="absolute inset-0 bg-black bg-opacity-20"></div>
         <div class="relative container mx-auto px-4">
             <div class="text-center">
@@ -43,14 +43,14 @@ get_header(); ?>
                         'post_type' => 'grant',
                         'meta_query' => array(
                             array(
-                                'key' => 'status',
-                                'value' => 'active',
+                                'key' => 'application_status',
+                                'value' => 'open',
                                 'compare' => '='
                             )
                         ),
                         'fields' => 'ids'
                     ));
-                    $prefecture_count = wp_count_terms(array('taxonomy' => 'grant_prefecture', 'hide_empty' => true));
+                    $prefecture_count = wp_count_terms(array('taxonomy' => 'grant_prefecture', 'hide_empty' => false));
                     ?>
                     <div class="text-center">
                         <div class="text-3xl md:text-4xl font-bold text-yellow-300">
@@ -107,7 +107,7 @@ get_header(); ?>
 
                 <div class="flex items-center gap-4">
                     <!-- 並び順 -->
-                    <select id="sort-order" class="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <select id="sort-order" class="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-blue-500">
                         <option value="date_desc">新着順</option>
                         <option value="date_asc">古い順</option>
                         <option value="amount_desc">金額が高い順</option>
@@ -166,7 +166,7 @@ get_header(); ?>
                                 ?>
                                 <label class="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors group">
                                     <div class="flex items-center gap-3">
-                                        <input type="checkbox" name="prefecture[]" value="<?php echo gi_safe_attr($term->slug); ?>" class="prefecture-checkbox w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                        <input type="checkbox" name="prefecture[]" value="<?php echo gi_safe_attr($term->slug); ?>" class="prefecture-checkbox w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-emerald-500">
                                         <span class="text-sm text-gray-700 group-hover:text-gray-900"><?php echo gi_safe_escape($term->name); ?></span>
                                     </div>
                                     <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full"><?php echo $term->count; ?></span>
@@ -182,7 +182,7 @@ get_header(); ?>
                                 <?php
                                 $all_prefectures = get_terms(array(
                                     'taxonomy' => 'grant_prefecture',
-                                    'hide_empty' => true,
+                                    'hide_empty' => false,
                                     'orderby' => 'name',
                                     'order' => 'ASC'
                                 ));
@@ -194,7 +194,7 @@ get_header(); ?>
                                 ?>
                                 <label class="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors group">
                                     <div class="flex items-center gap-3">
-                                        <input type="checkbox" name="prefecture[]" value="<?php echo gi_safe_attr($prefecture->slug); ?>" class="prefecture-checkbox w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                        <input type="checkbox" name="prefecture[]" value="<?php echo gi_safe_attr($prefecture->slug); ?>" class="prefecture-checkbox w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-emerald-500">
                                         <span class="text-sm text-gray-700 group-hover:text-gray-900"><?php echo gi_safe_escape($prefecture->name); ?></span>
                                     </div>
                                     <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full"><?php echo $prefecture->count; ?></span>
@@ -227,7 +227,7 @@ get_header(); ?>
                             // 代表カテゴリを取得
                             $categories = get_terms(array(
                                 'taxonomy' => 'grant_category',
-                                'hide_empty' => true,
+                                'hide_empty' => false,
                                 'orderby' => 'count',
                                 'order' => 'DESC',
                                 'number' => 6
@@ -235,7 +235,7 @@ get_header(); ?>
 
                             $all_categories = get_terms(array(
                                 'taxonomy' => 'grant_category',
-                                'hide_empty' => true,
+                                'hide_empty' => false,
                                 'orderby' => 'name',
                                 'order' => 'ASC'
                             ));
@@ -246,7 +246,7 @@ get_header(); ?>
                             ?>
                             <label class="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors group">
                                 <div class="flex items-center gap-3">
-                                    <input type="checkbox" name="category[]" value="<?php echo gi_safe_attr($category->slug); ?>" class="category-checkbox w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                    <input type="checkbox" name="category[]" value="<?php echo gi_safe_attr($category->slug); ?>" class="category-checkbox w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-emerald-500">
                                     <span class="text-sm text-gray-700 group-hover:text-gray-900"><?php echo gi_safe_escape($category->name); ?></span>
                                 </div>
                                 <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full"><?php echo $category->count; ?></span>
@@ -259,7 +259,7 @@ get_header(); ?>
                                 <?php foreach (array_slice($all_categories, 5) as $category) : ?>
                                 <label class="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors group">
                                     <div class="flex items-center gap-3">
-                                        <input type="checkbox" name="category[]" value="<?php echo gi_safe_attr($category->slug); ?>" class="category-checkbox w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                        <input type="checkbox" name="category[]" value="<?php echo gi_safe_attr($category->slug); ?>" class="category-checkbox w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-emerald-500">
                                         <span class="text-sm text-gray-700 group-hover:text-gray-900"><?php echo gi_safe_escape($category->name); ?></span>
                                     </div>
                                     <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full"><?php echo $category->count; ?></span>
@@ -284,23 +284,23 @@ get_header(); ?>
                         </h4>
                         <div class="space-y-2">
                             <label class="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                                <input type="radio" name="amount" value="" checked class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                <input type="radio" name="amount" value="" checked class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-emerald-500">
                                 <span class="text-sm text-gray-700">すべて</span>
                             </label>
                             <label class="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                                <input type="radio" name="amount" value="0-100" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                <input type="radio" name="amount" value="0-100" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-emerald-500">
                                 <span class="text-sm text-gray-700">100万円以下</span>
                             </label>
                             <label class="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                                <input type="radio" name="amount" value="100-500" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                <input type="radio" name="amount" value="100-500" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-emerald-500">
                                 <span class="text-sm text-gray-700">100万円〜500万円</span>
                             </label>
                             <label class="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                                <input type="radio" name="amount" value="500-1000" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                <input type="radio" name="amount" value="500-1000" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-emerald-500">
                                 <span class="text-sm text-gray-700">500万円〜1000万円</span>
                             </label>
                             <label class="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                                <input type="radio" name="amount" value="1000+" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                <input type="radio" name="amount" value="1000+" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-emerald-500">
                                 <span class="text-sm text-gray-700">1000万円以上</span>
                             </label>
                         </div>
@@ -314,12 +314,12 @@ get_header(); ?>
                         </h4>
                         <div class="space-y-2">
                             <label class="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                                <input type="checkbox" name="status[]" value="active" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                <input type="checkbox" name="status[]" value="active" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-emerald-500">
                                 <span class="text-sm text-gray-700">募集中</span>
                                 <span class="ml-auto w-3 h-3 bg-green-500 rounded-full"></span>
                             </label>
                             <label class="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                                <input type="checkbox" name="status[]" value="upcoming" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                <input type="checkbox" name="status[]" value="upcoming" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-emerald-500">
                                 <span class="text-sm text-gray-700">募集予定</span>
                                 <span class="ml-auto w-3 h-3 bg-yellow-500 rounded-full"></span>
                             </label>
@@ -462,7 +462,9 @@ document.addEventListener('DOMContentLoaded', function() {
         filters: {
             search: '',
             categories: [],
+            categorySlugs: [],
             prefectures: [],
+            prefectureSlugs: [],
             amount: '',
             status: [],
             sort: 'date_desc'
@@ -530,13 +532,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (filter === 'all') {
                         this.filters.status = [];
                         this.filters.prefectures = [];
+                        this.filters.prefectureSlugs = [];
                     } else if (filter === 'national') {
-                        this.filters.prefectures = ['全国対応'];
-                        this.filters.status = [];
-                        // チェックボックスの状態を更新
+                        // 全国対応のslugをDOMから取得
+                        let nationalSlug = '';
                         document.querySelectorAll('.prefecture-checkbox').forEach(cb => {
-                            cb.checked = cb.value === 'zenkoku-taiou' || cb.closest('label').textContent.includes('全国対応');
+                            const label = cb.closest('label');
+                            if (label && label.textContent.includes('全国対応')) {
+                                nationalSlug = cb.value;
+                                cb.checked = true;
+                            } else {
+                                cb.checked = false;
+                            }
                         });
+                        this.filters.prefectures = ['全国対応'];
+                        this.filters.prefectureSlugs = nationalSlug ? [nationalSlug] : [];
+                        this.filters.status = [];
                     } else {
                         this.filters.status = [filter];
                         this.filters.prefectures = [];
@@ -689,23 +700,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
         updatePrefectureFilters() {
             const checkboxes = document.querySelectorAll('.prefecture-checkbox:checked');
-            this.filters.prefectures = Array.from(checkboxes).map(cb => {
-                // チェックボックスの値またはラベルテキストから都道府県名を取得
+            const names = [];
+            const slugs = [];
+            Array.from(checkboxes).forEach(cb => {
                 const label = cb.closest('label');
-                const nameSpan = label.querySelector('span');
-                return nameSpan ? nameSpan.textContent.trim() : cb.value;
+                const nameSpan = label ? label.querySelector('span') : null;
+                names.push(nameSpan ? nameSpan.textContent.trim() : cb.value);
+                slugs.push(cb.value);
             });
+            this.filters.prefectures = names;
+            this.filters.prefectureSlugs = slugs;
             this.updateFilterDisplay();
             this.loadGrants();
         },
 
         updateCategoryFilters() {
             const checkboxes = document.querySelectorAll('.category-checkbox:checked');
-            this.filters.categories = Array.from(checkboxes).map(cb => {
+            const names = [];
+            const slugs = [];
+            Array.from(checkboxes).forEach(cb => {
                 const label = cb.closest('label');
-                const nameSpan = label.querySelector('span');
-                return nameSpan ? nameSpan.textContent.trim() : cb.value;
+                const nameSpan = label ? label.querySelector('span') : null;
+                names.push(nameSpan ? nameSpan.textContent.trim() : cb.value);
+                slugs.push(cb.value);
             });
+            this.filters.categories = names;
+            this.filters.categorySlugs = slugs;
             this.updateFilterDisplay();
             this.loadGrants();
         },
@@ -878,8 +898,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         sort: this.filters.sort,
                         view: this.currentView,
                         page: this.currentPage,
-                        categories: JSON.stringify(this.filters.categories),
-                        prefectures: JSON.stringify(this.filters.prefectures),
+                        categories: JSON.stringify(this.filters.categorySlugs || []),
+                        prefectures: JSON.stringify(this.filters.prefectureSlugs || []),
                         status: JSON.stringify(this.filters.status)
                     })
                 });
@@ -981,8 +1001,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             ` : ''}
                         </div>
                         
-                        <h3 class="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 hover:text-blue-600 transition-colors">
-                            <a href="${this.escapeHtml(grant.permalink)}" class="focus:outline-none focus:ring-2 focus:ring-blue-500 rounded">${this.escapeHtml(grant.title)}</a>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 hover:text-emerald-600 transition-colors">
+                            <a href="${this.escapeHtml(grant.permalink)}" class="focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded">${this.escapeHtml(grant.title)}</a>
                         </h3>
                         
                         <div class="flex items-center gap-2 mb-3">
@@ -1014,7 +1034,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         <div class="flex gap-2">
                             <a href="${this.escapeHtml(grant.permalink)}" 
-                               class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                               class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-center py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                                 詳細を見る
                             </a>
                             <button class="share-btn px-3 py-2 border border-gray-300 hover:border-gray-400 text-gray-600 hover:text-gray-700 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
@@ -1069,7 +1089,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     </div>
                                     
                                     <h3 class="text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors">
-                                        <a href="${this.escapeHtml(grant.permalink)}" class="focus:outline-none focus:ring-2 focus:ring-blue-500 rounded">${this.escapeHtml(grant.title)}</a>
+                                        <a href="${this.escapeHtml(grant.permalink)}" class="focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded">${this.escapeHtml(grant.title)}</a>
                                     </h3>
                                     
                                     <p class="text-gray-600 mb-4 line-clamp-2">
@@ -1103,7 +1123,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     
                                     <div class="flex lg:flex-col gap-2">
                                         <a href="${this.escapeHtml(grant.permalink)}" 
-                                           class="flex-1 lg:flex-none bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-4 rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                           class="flex-1 lg:flex-none bg-emerald-600 hover:bg-emerald-700 text-white text-center py-2 px-4 rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                                             詳細を見る
                                         </a>
                                         <button class="share-btn px-3 py-2 border border-gray-300 hover:border-gray-400 text-gray-600 hover:text-gray-700 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
@@ -1140,9 +1160,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (query) {
                 let queryText = [];
-                if (queryInfo?.search) queryText.push(`「${queryInfo.search}」`);
-                if (queryInfo?.prefectures?.length > 0) queryText.push(`${queryInfo.prefectures.join('、')}`);
-                if (queryInfo?.categories?.length > 0) queryText.push(`${queryInfo.categories.join('、')}`);
+                if (this.filters.search) queryText.push(`「${this.filters.search}」`);
+                if ((this.filters.prefectures || []).length > 0) queryText.push(`${this.filters.prefectures.join('、')}`);
+                if ((this.filters.categories || []).length > 0) queryText.push(`${this.filters.categories.join('、')}`);
                 
                 query.textContent = queryText.length > 0 ? `${queryText.join(' / ')}の検索結果` : '';
             }
@@ -1463,24 +1483,10 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 /* ダークモード対応 */
-@media (prefers-color-scheme: dark) {
-    .bg-white {
-        background-color: #1f2937;
-        color: #f9fafb;
-    }
+/* Removed forced dark-mode overrides to maintain light emerald/teal theme. Use Tailwind 'dark' variants where needed. */
+/* (dark-mode overrides removed) */
     
-    .text-gray-900 {
-        color: #f9fafb;
-    }
-    
-    .text-gray-600 {
-        color: #d1d5db;
-    }
-    
-    .border-gray-200 {
-        border-color: #374151;
-    }
-}
+
 
 /* プリント対応 */
 @media print {
