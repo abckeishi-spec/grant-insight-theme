@@ -16,9 +16,12 @@ if (!defined('ABSPATH')) {
 define('GI_THEME_VERSION', '6.2.0');
 define('GI_THEME_PREFIX', 'gi_');
 
-// ACF helpers
+// ACF helpers and local JSON import
 if (file_exists(get_template_directory() . '/acf-fields-setup.php')) {
     require_once get_template_directory() . '/acf-fields-setup.php';
+}
+if (file_exists(get_template_directory() . '/inc/acf-import.php')) {
+    require_once get_template_directory() . '/inc/acf-import.php';
 }
 
 /**
