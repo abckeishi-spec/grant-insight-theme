@@ -863,11 +863,9 @@ document.addEventListener('DOMContentLoaded', function() {
             this.hideError();
 
             try {
-                if (typeof giAjax === 'undefined') {
-                    throw new Error('AJAX configuration not found');
-                }
+                const ajaxUrl = (typeof gi_ajax !== 'undefined' && gi_ajax.ajax_url) ? gi_ajax.ajax_url : (typeof giAjax !== 'undefined' ? giAjax.ajaxurl : '<?php echo admin_url('admin-ajax.php'); ?>');
 
-                const response = await fetch(giAjax.ajaxurl, {
+                const response = await fetch(ajaxUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -1249,11 +1247,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const postId = btn.dataset.postId;
             
             try {
-                if (typeof giAjax === 'undefined') {
-                    throw new Error('AJAX configuration not found');
-                }
+                const ajaxUrl = (typeof gi_ajax !== 'undefined' && gi_ajax.ajax_url) ? gi_ajax.ajax_url : (typeof giAjax !== 'undefined' ? giAjax.ajaxurl : '<?php echo admin_url('admin-ajax.php'); ?>');
 
-                const response = await fetch(giAjax.ajaxurl, {
+                const response = await fetch(ajaxUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
