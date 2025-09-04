@@ -16,6 +16,11 @@ if (!defined('ABSPATH')) {
 define('GI_THEME_VERSION', '6.2.0');
 define('GI_THEME_PREFIX', 'gi_');
 
+// ACF helpers
+if (file_exists(get_template_directory() . '/acf-fields-setup.php')) {
+    require_once get_template_directory() . '/acf-fields-setup.php';
+}
+
 /**
  * テーマセットアップ
  */
@@ -254,11 +259,11 @@ function gi_enqueue_scripts() {
     wp_enqueue_style('gi-style', get_stylesheet_uri(), array(), GI_THEME_VERSION);
     
     // メインJavaScript
-    wp_enqueue_script('gi-main-js', get_template_directory_uri() . '/js/main.js', array('jquery'), GI_THEME_VERSION, true);
+    wp_enqueue_script('gi-main-js', get_template_directory_uri() . '/assets/js/main.js', array('jquery'), GI_THEME_VERSION, true);
     
     // AJAX設定（強化版）
-    wp_localize_script('gi-main-js', 'giAjax', array(
-        'ajaxurl' => admin_url('admin-ajax.php'),
+    wp_localize_script('gi-main-js', 'gi_ajax', array(
+        'ajax_url' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('gi_ajax_nonce'),
         'homeUrl' => home_url('/'),
         'themeUrl' => get_template_directory_uri(),
@@ -274,6 +279,8 @@ function gi_enqueue_scripts() {
             'confirm' => '実行してもよろしいですか？'
         )
     ));
+    // Back-compat shim for legacy inline scripts expecting giAjax
+    wp_add_inline_script('gi-main-js', 'window.giAjax = window.giAjax || { ajaxurl: gi_ajax.ajax_url, nonce: gi_ajax.nonce };');
     
     // 条件付きスクリプト読み込み
     if (is_singular()) {
@@ -281,7 +288,7 @@ function gi_enqueue_scripts() {
     }
     
     if (is_front_page()) {
-        wp_enqueue_script('gi-frontend-js', get_template_directory_uri() . '/js/frontend.js', array('gi-main-js'), GI_THEME_VERSION, true);
+        wp_enqueue_script('gi-frontend-js', get_template_directory_uri() . '/assets/js/front-page.js', array('gi-main-js'), GI_THEME_VERSION, true);
     }
 }
 add_action('wp_enqueue_scripts', 'gi_enqueue_scripts');
@@ -294,7 +301,7 @@ function gi_admin_enqueue_scripts($hook) {
     wp_enqueue_script('gi-admin-js', get_template_directory_uri() . '/js/admin.js', array('jquery'), GI_THEME_VERSION, true);
     
     wp_localize_script('gi-admin-js', 'giAdmin', array(
-        'ajaxurl' => admin_url('admin-ajax.php'),
+        'ajax_url' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('gi_admin_nonce')
     ));
 }
@@ -899,6 +906,41 @@ function gi_get_logo_url($fallback = true) {
 }
 
 /**
+ * 補助ヘルパー: 金額（円）を万円表示用に整形
+ */
+function gi_format_amount_man($amount_yen, $amount_text = '') {
+    $yen = is_numeric($amount_yen) ? intval($amount_yen) : 0;
+    if ($yen > 0) {
+        return gi_safe_number_format(intval($yen / 10000));
+    }
+    if (!empty($amount_text)) {
+        if (preg_match('/([0-9,]+)\s*万円/u', $amount_text, $m)) {
+            return gi_safe_number_format(intval(str_replace(',', '', $m[1])));
+        }
+        if (preg_match('/([0-9,]+)/u', $amount_text, $m)) {
+            return gi_safe_number_format(intval(str_replace(',', '', $m[1])));
+        }
+    }
+    return '0';
+}
+
+/**
+ * 補助ヘルパー: ACFのapplication_statusをUI用にマッピング
+ */
+function gi_map_application_status_ui($app_status) {
+    switch ($app_status) {
+        case 'open':
+            return 'active';
+        case 'upcoming':
+            return 'upcoming';
+        case 'closed':
+            return 'closed';
+        default:
+            return 'active';
+    }
+}
+
+/**
  * AJAX - 助成金読み込み処理（都道府県・完全対応版）
  */
 function gi_ajax_load_grants() {
@@ -911,6 +953,10 @@ function gi_ajax_load_grants() {
     $prefectures = json_decode(stripslashes($_POST['prefectures'] ?? '[]'), true);
     $amount = sanitize_text_field($_POST['amount'] ?? '');
     $status = json_decode(stripslashes($_POST['status'] ?? '[]'), true);
+    // Map UI statuses to ACF values
+    if (is_array($status)) {
+        $status = array_map(function($s){ return $s === 'active' ? 'open' : $s; }, $status);
+    }
     $sort = sanitize_text_field($_POST['sort'] ?? 'date_desc');
     $view = sanitize_text_field($_POST['view'] ?? 'grid');
     $page = intval($_POST['page'] ?? 1);
@@ -964,33 +1010,33 @@ function gi_ajax_load_grants() {
         switch ($amount) {
             case '0-100':
                 $meta_query[] = array(
-                    'key' => 'max_amount',
-                    'value' => 100,
+                    'key' => 'max_amount_numeric',
+                    'value' => 1000000,
                     'compare' => '<=',
                     'type' => 'NUMERIC'
                 );
                 break;
             case '100-500':
                 $meta_query[] = array(
-                    'key' => 'max_amount',
-                    'value' => array(100, 500),
+                    'key' => 'max_amount_numeric',
+                    'value' => array(1000000, 5000000),
                     'compare' => 'BETWEEN',
                     'type' => 'NUMERIC'
                 );
                 break;
             case '500-1000':
                 $meta_query[] = array(
-                    'key' => 'max_amount',
-                    'value' => array(500, 1000),
+                    'key' => 'max_amount_numeric',
+                    'value' => array(5000000, 10000000),
                     'compare' => 'BETWEEN',
                     'type' => 'NUMERIC'
                 );
                 break;
             case '1000+':
                 $meta_query[] = array(
-                    'key' => 'max_amount',
-                    'value' => 1000,
-                    'compare' => '>',
+                    'key' => 'max_amount_numeric',
+                    'value' => 10000000,
+                    'compare' => '>=',
                     'type' => 'NUMERIC'
                 );
                 break;
@@ -1000,7 +1046,7 @@ function gi_ajax_load_grants() {
     // ステータスフィルター
     if (!empty($status)) {
         $meta_query[] = array(
-            'key' => 'status',
+            'key' => 'application_status',
             'value' => $status,
             'compare' => 'IN'
         );
@@ -1022,17 +1068,17 @@ function gi_ajax_load_grants() {
             break;
         case 'amount_desc':
             $args['orderby'] = 'meta_value_num';
-            $args['meta_key'] = 'max_amount';
+            $args['meta_key'] = 'max_amount_numeric';
             $args['order'] = 'DESC';
             break;
         case 'amount_asc':
             $args['orderby'] = 'meta_value_num';
-            $args['meta_key'] = 'max_amount';
+            $args['meta_key'] = 'max_amount_numeric';
             $args['order'] = 'ASC';
             break;
         case 'deadline_asc':
-            $args['orderby'] = 'meta_value';
-            $args['meta_key'] = 'deadline';
+            $args['orderby'] = 'meta_value_num';
+            $args['meta_key'] = 'deadline_date';
             $args['order'] = 'ASC';
             break;
         case 'title_asc':
@@ -1085,10 +1131,10 @@ function gi_ajax_load_grants() {
                 'prefecture' => $prefecture,
                 'main_category' => $main_category,
                 'related_categories' => $related_categories,
-                'amount' => gi_safe_number_format(gi_safe_get_meta($post_id, 'max_amount', 0)),
+                'amount' => gi_format_amount_man(gi_safe_get_meta($post_id, 'max_amount_numeric', 0), gi_safe_get_meta($post_id, 'max_amount', '')),
                 'organization' => gi_safe_escape(gi_safe_get_meta($post_id, 'organization')),
-                'deadline' => gi_safe_date_format(gi_safe_get_meta($post_id, 'deadline'), 'Y年m月d日'),
-                'status' => gi_safe_get_meta($post_id, 'status', 'active'),
+                'deadline' => (function_exists('gi_get_formatted_deadline') ? gi_get_formatted_deadline($post_id) : gi_safe_date_format(gi_safe_get_meta($post_id, 'deadline_date'), 'Y年m月d日')),
+                'status' => gi_map_application_status_ui(gi_safe_get_meta($post_id, 'application_status', 'open')),
                 'is_favorite' => in_array($post_id, $user_favorites)
             );
         }
@@ -1180,6 +1226,184 @@ function gi_ajax_search() {
 add_action('wp_ajax_gi_search', 'gi_ajax_search');
 add_action('wp_ajax_nopriv_gi_search', 'gi_ajax_search');
 
+// === Missing AJAX endpoints implemented ===
+// 1) Search suggestions
+function gi_ajax_get_search_suggestions() {
+    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'gi_ajax_nonce')) {
+        wp_send_json_error('Invalid nonce');
+    }
+    $query = sanitize_text_field($_POST['query'] ?? '');
+    $suggestions = array();
+    if ($query !== '') {
+        $args = array(
+            's' => $query,
+            'post_type' => array('grant','tool','case_study','guide','grant_tip'),
+            'post_status' => 'publish',
+            'posts_per_page' => 5,
+            'fields' => 'ids'
+        );
+        $posts = get_posts($args);
+        foreach ($posts as $pid) {
+            $suggestions[] = array(
+                'label' => get_the_title($pid),
+                'value' => get_the_title($pid)
+            );
+        }
+    }
+    wp_send_json_success($suggestions);
+}
+add_action('wp_ajax_get_search_suggestions', 'gi_ajax_get_search_suggestions');
+add_action('wp_ajax_nopriv_get_search_suggestions', 'gi_ajax_get_search_suggestions');
+
+// 2) Advanced search (simple wrapper around gi_search with HTML list)
+function gi_ajax_advanced_search() {
+    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'gi_ajax_nonce')) {
+        wp_send_json_error('Invalid nonce');
+    }
+    $keyword = sanitize_text_field($_POST['search_query'] ?? ($_POST['s'] ?? ''));
+    $prefecture = sanitize_text_field($_POST['prefecture'] ?? '');
+    $category = sanitize_text_field($_POST['category'] ?? '');
+    $amount = sanitize_text_field($_POST['amount'] ?? '');
+    $status = sanitize_text_field($_POST['status'] ?? '');
+
+    $tax_query = array('relation' => 'AND');
+    if ($prefecture) {
+        $tax_query[] = array('taxonomy'=>'grant_prefecture','field'=>'slug','terms'=>array($prefecture),'operator'=>'IN');
+    }
+    if ($category) {
+        $tax_query[] = array('taxonomy'=>'grant_category','field'=>'slug','terms'=>array($category),'operator'=>'IN');
+    }
+
+    $meta_query = array('relation' => 'AND');
+    if ($amount) {
+        switch ($amount) {
+            case '0-100':
+                $meta_query[] = array('key'=>'max_amount_numeric','value'=>1000000,'compare'=>'<=','type'=>'NUMERIC');
+                break;
+            case '100-500':
+                $meta_query[] = array('key'=>'max_amount_numeric','value'=>array(1000000,5000000),'compare'=>'BETWEEN','type'=>'NUMERIC');
+                break;
+            case '500-1000':
+                $meta_query[] = array('key'=>'max_amount_numeric','value'=>array(5000000,10000000),'compare'=>'BETWEEN','type'=>'NUMERIC');
+                break;
+            case '1000+':
+                $meta_query[] = array('key'=>'max_amount_numeric','value'=>10000000,'compare'=>'>=','type'=>'NUMERIC');
+                break;
+        }
+    }
+    if ($status) {
+        $status = $status === 'active' ? 'open' : $status;
+        $meta_query[] = array('key'=>'application_status','value'=>array($status),'compare'=>'IN');
+    }
+
+    $args = array(
+        'post_type' => 'grant',
+        'post_status' => 'publish',
+        'posts_per_page' => 6,
+        's' => $keyword,
+    );
+    if (count($tax_query) > 1) $args['tax_query'] = $tax_query;
+    if (count($meta_query) > 1) $args['meta_query'] = $meta_query;
+
+    $q = new WP_Query($args);
+    $html = '';
+    if ($q->have_posts()) {
+        while ($q->have_posts()) { $q->the_post();
+            $pid = get_the_ID();
+            $html .= gi_render_grant_card($pid, 'grid');
+        }
+        wp_reset_postdata();
+    }
+    wp_send_json_success(array(
+        'html' => $html ?: '<p class="text-gray-500">該当する助成金が見つかりませんでした。</p>',
+        'count' => $q->found_posts
+    ));
+}
+add_action('wp_ajax_advanced_search', 'gi_ajax_advanced_search');
+add_action('wp_ajax_nopriv_advanced_search', 'gi_ajax_advanced_search');
+
+// 3) Newsletter signup (stores emails in option transient-like array)
+function gi_ajax_newsletter_signup() {
+    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'gi_ajax_nonce')) {
+        wp_send_json_error('Invalid nonce');
+    }
+    $email = sanitize_email($_POST['email'] ?? '');
+    if (!$email || !is_email($email)) {
+        wp_send_json_error('メールアドレスが正しくありません');
+    }
+    $list = get_option('gi_newsletter_list', array());
+    if (!is_array($list)) $list = array();
+    if (!in_array($email, $list)) {
+        $list[] = $email;
+        update_option('gi_newsletter_list', $list);
+    }
+    wp_send_json_success(array('message' => '登録しました'));
+}
+add_action('wp_ajax_newsletter_signup', 'gi_ajax_newsletter_signup');
+add_action('wp_ajax_nopriv_newsletter_signup', 'gi_ajax_newsletter_signup');
+
+// 4) Affiliate click tracking
+function gi_ajax_track_affiliate_click() {
+    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'gi_ajax_nonce')) {
+        wp_send_json_error('Invalid nonce');
+    }
+    $url = esc_url_raw($_POST['url'] ?? '');
+    $post_id = intval($_POST['post_id'] ?? 0);
+    if (!$url) wp_send_json_error('URLが無効です');
+    $log = get_option('gi_affiliate_clicks', array());
+    if (!is_array($log)) $log = array();
+    $log[] = array('time' => current_time('timestamp'), 'url' => $url, 'post_id' => $post_id, 'ip' => $_SERVER['REMOTE_ADDR'] ?? '');
+    update_option('gi_affiliate_clicks', $log);
+    wp_send_json_success(array('message' => 'ok'));
+}
+add_action('wp_ajax_track_affiliate_click', 'gi_ajax_track_affiliate_click');
+add_action('wp_ajax_nopriv_track_affiliate_click', 'gi_ajax_track_affiliate_click');
+
+// 5) Related grants
+function gi_ajax_get_related_grants() {
+    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'get_related_grants_nonce')) {
+        wp_send_json_error('Invalid nonce');
+    }
+    $post_id = intval($_POST['post_id'] ?? 0);
+    $category_name = sanitize_text_field($_POST['category'] ?? '');
+    $prefecture_name = sanitize_text_field($_POST['prefecture'] ?? '');
+
+    $tax_query = array('relation' => 'AND');
+    if ($category_name) {
+        $term = get_term_by('name', $category_name, 'grant_category');
+        if ($term) {
+            $tax_query[] = array('taxonomy'=>'grant_category','field'=>'term_id','terms'=>array($term->term_id));
+        }
+    }
+    if ($prefecture_name) {
+        $term = get_term_by('name', $prefecture_name, 'grant_prefecture');
+        if ($term) {
+            $tax_query[] = array('taxonomy'=>'grant_prefecture','field'=>'term_id','terms'=>array($term->term_id));
+        }
+    }
+
+    $args = array(
+        'post_type' => 'grant',
+        'post_status' => 'publish',
+        'posts_per_page' => 3,
+        'post__not_in' => array($post_id),
+    );
+    if (count($tax_query) > 1) $args['tax_query'] = $tax_query;
+
+    $q = new WP_Query($args);
+    $html = '';
+    if ($q->have_posts()) {
+        while ($q->have_posts()) { $q->the_post();
+            $pid = get_the_ID();
+            $html .= gi_render_grant_card($pid, 'list');
+        }
+        wp_reset_postdata();
+    }
+    wp_send_json_success(array('html' => $html));
+}
+add_action('wp_ajax_get_related_grants', 'gi_ajax_get_related_grants');
+add_action('wp_ajax_nopriv_get_related_grants', 'gi_ajax_get_related_grants');
+
 /**
  * お気に入り機能（強化版）
  */
@@ -1233,6 +1457,9 @@ function gi_ajax_toggle_favorite() {
 }
 add_action('wp_ajax_gi_toggle_favorite', 'gi_ajax_toggle_favorite');
 add_action('wp_ajax_nopriv_gi_toggle_favorite', 'gi_ajax_toggle_favorite');
+// Alias for front-page.js 'toggle_favorite'
+add_action('wp_ajax_toggle_favorite', 'gi_ajax_toggle_favorite');
+add_action('wp_ajax_nopriv_toggle_favorite', 'gi_ajax_toggle_favorite');
 
 /**
  * お気に入り一覧取得
@@ -1321,10 +1548,10 @@ function gi_render_grant_card($post_id, $view = 'grid') {
         'prefecture' => $prefecture,
         'main_category' => $main_category,
         'related_categories' => $related_categories,
-        'amount' => gi_safe_number_format(gi_safe_get_meta($post_id, 'max_amount', 0)),
+        'amount' => gi_format_amount_man(gi_safe_get_meta($post_id, 'max_amount_numeric', 0), gi_safe_get_meta($post_id, 'max_amount', '')),
         'organization' => gi_safe_escape(gi_safe_get_meta($post_id, 'organization')),
-        'deadline' => gi_safe_date_format(gi_safe_get_meta($post_id, 'deadline'), 'Y年m月d日'),
-        'status' => gi_safe_get_meta($post_id, 'status', 'active'),
+        'deadline' => (function_exists('gi_get_formatted_deadline') ? gi_get_formatted_deadline($post_id) : gi_safe_date_format(gi_safe_get_meta($post_id, 'deadline_date'), 'Y年m月d日')),
+        'status' => gi_map_application_status_ui(gi_safe_get_meta($post_id, 'application_status', 'open')),
         'is_favorite' => in_array($post_id, $user_favorites)
     );
 
@@ -1810,7 +2037,7 @@ function gi_grant_column_content($column, $post_id) {
             echo gi_safe_escape(gi_safe_get_meta($post_id, 'organization', '－'));
             break;
         case 'gi_status':
-            $status = gi_safe_get_meta($post_id, 'status', 'active');
+            $status = gi_map_application_status_ui(gi_safe_get_meta($post_id, 'application_status', 'open'));
             $status_labels = array(
                 'active' => '<span style="color: #059669;">募集中</span>',
                 'upcoming' => '<span style="color: #d97706;">募集予定</span>',
