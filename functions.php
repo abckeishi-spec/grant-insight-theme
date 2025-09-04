@@ -944,7 +944,7 @@ function gi_map_application_status_ui($app_status) {
  * AJAX - 助成金読み込み処理（都道府県・完全対応版）
  */
 function gi_ajax_load_grants() {
-    if (!wp_verify_nonce($_POST['nonce'], 'gi_ajax_nonce')) {
+    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'gi_ajax_nonce') && !wp_verify_nonce($_POST['nonce'] ?? '', 'grant_insight_search_nonce')) {
         wp_send_json_error('セキュリティチェックに失敗しました');
     }
 
@@ -1174,7 +1174,7 @@ add_action('wp_ajax_nopriv_gi_load_grants', 'gi_ajax_load_grants');
  * AJAX検索機能（強化版）
  */
 function gi_ajax_search() {
-    if (!wp_verify_nonce($_POST['nonce'], 'gi_ajax_nonce')) {
+    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'gi_ajax_nonce') && !wp_verify_nonce($_POST['nonce'] ?? '', 'grant_insight_search_nonce')) {
         wp_send_json_error('セキュリティチェックに失敗しました');
     }
     
@@ -1322,6 +1322,230 @@ function gi_ajax_advanced_search() {
 add_action('wp_ajax_advanced_search', 'gi_ajax_advanced_search');
 add_action('wp_ajax_nopriv_advanced_search', 'gi_ajax_advanced_search');
 
+// 2.5) Grant Insight top page search (section-search.php)
+function gi_ajax_grant_insight_search() {
+    // Verify nonce specific to front-page search section
+    $nonce = isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '';
+    if (!wp_verify_nonce($nonce, 'grant_insight_search_nonce')) {
+        wp_send_json_error(array('message' => 'Invalid nonce'), 403);
+    }
+
+    $keyword   = sanitize_text_field($_POST['keyword'] ?? '');
+    $post_type = sanitize_text_field($_POST['post_type'] ?? '');
+    $orderby   = sanitize_text_field($_POST['orderby'] ?? 'relevance');
+    $category  = sanitize_text_field($_POST['category'] ?? ''); // term_id expected for grant_category
+    $amount_min = isset($_POST['amount_min']) ? intval($_POST['amount_min']) : 0;
+    $amount_max = isset($_POST['amount_max']) ? intval($_POST['amount_max']) : 0;
+    $deadline   = sanitize_text_field($_POST['deadline'] ?? '');
+    $page       = max(1, intval($_POST['page'] ?? 1));
+
+    $per_page = 12;
+
+    // Determine post types
+    $post_types = array('grant','tool','case_study','guide','grant_tip');
+    if (!empty($post_type)) {
+        $post_types = array($post_type);
+    }
+
+    $args = array(
+        'post_type'      => $post_types,
+        'post_status'    => 'publish',
+        's'              => $keyword,
+        'paged'          => $page,
+        'posts_per_page' => $per_page,
+    );
+
+    // Orderby mapping
+    switch ($orderby) {
+        case 'date':
+            $args['orderby'] = 'date';
+            $args['order'] = 'DESC';
+            break;
+        case 'title':
+            $args['orderby'] = 'title';
+            $args['order'] = 'ASC';
+            break;
+        case 'modified':
+            $args['orderby'] = 'modified';
+            $args['order'] = 'DESC';
+            break;
+        case 'relevance':
+        default:
+            $args['orderby'] = 'relevance';
+            $args['order']   = 'DESC';
+            break;
+    }
+
+    // Tax query (grant category only when applicable)
+    $tax_query = array('relation' => 'AND');
+    if (!empty($category)) {
+        // Only apply to grants; ignore for others
+        $tax_query[] = array(
+            'taxonomy' => 'grant_category',
+            'field'    => 'term_id',
+            'terms'    => array(intval($category)),
+        );
+    }
+    if (count($tax_query) > 1) {
+        $args['tax_query'] = $tax_query;
+    }
+
+    // Meta query for grants (amount and deadline)
+    $meta_query = array('relation' => 'AND');
+    if (in_array('grant', $post_types, true) || $post_type === 'grant') {
+        if ($amount_min > 0 || $amount_max > 0) {
+            $range = array();
+            if ($amount_min > 0) $range[] = $amount_min;
+            if ($amount_max > 0) $range[] = $amount_max;
+            $meta_query[] = array(
+                'key'     => 'max_amount_numeric',
+                'value'   => $amount_max > 0 && $amount_min > 0 ? array($amount_min, $amount_max) : ($amount_max > 0 ? $amount_max : $amount_min),
+                'compare' => ($amount_min > 0 && $amount_max > 0) ? 'BETWEEN' : ($amount_max > 0 ? '<=' : '>='),
+                'type'    => 'NUMERIC',
+            );
+        }
+
+        if (!empty($deadline)) {
+            $todayYmd = intval(current_time('Ymd'));
+            $targetYmd = $todayYmd;
+            switch ($deadline) {
+                case '1month':
+                    $targetYmd = intval(date('Ymd', strtotime('+1 month', current_time('timestamp'))));
+                    break;
+                case '3months':
+                    $targetYmd = intval(date('Ymd', strtotime('+3 months', current_time('timestamp'))));
+                    break;
+                case '6months':
+                    $targetYmd = intval(date('Ymd', strtotime('+6 months', current_time('timestamp'))));
+                    break;
+                case '1year':
+                    $targetYmd = intval(date('Ymd', strtotime('+1 year', current_time('timestamp'))));
+                    break;
+            }
+            $meta_query[] = array(
+                'key'     => 'deadline_date',
+                'value'   => array($todayYmd, $targetYmd),
+                'compare' => 'BETWEEN',
+                'type'    => 'NUMERIC',
+            );
+        }
+    }
+    if (count($meta_query) > 1) {
+        $args['meta_query'] = $meta_query;
+    }
+
+    $q = new WP_Query($args);
+
+    $favorites = gi_get_user_favorites();
+    $posts = array();
+    if ($q->have_posts()) {
+        while ($q->have_posts()) { $q->the_post();
+            $pid = get_the_ID();
+            $ptype = get_post_type($pid);
+            $amount_yen = ($ptype === 'grant') ? intval(get_post_meta($pid, 'max_amount_numeric', true)) : 0;
+            $deadline_date = ($ptype === 'grant') ? get_post_meta($pid, 'deadline_date', true) : '';
+
+            $posts[] = array(
+                'id'         => $pid,
+                'title'      => get_the_title($pid),
+                'excerpt'    => wp_strip_all_tags(get_the_excerpt($pid)),
+                'permalink'  => get_permalink($pid),
+                'thumbnail'  => get_the_post_thumbnail_url($pid, 'medium'),
+                'date'       => get_the_date('Y-m-d', $pid),
+                'post_type'  => $ptype,
+                'amount'     => $amount_yen,
+                'deadline'   => $deadline_date,
+                'is_featured'=> false,
+                'is_favorite'=> in_array($pid, $favorites, true),
+            );
+        }
+        wp_reset_postdata();
+    }
+
+    $response = array(
+        'posts' => $posts,
+        'pagination' => array(
+            'current_page' => $page,
+            'total_pages'  => max(1, intval($q->max_num_pages)),
+        ),
+        'total' => intval($q->found_posts),
+    );
+
+    wp_send_json_success($response);
+}
+add_action('wp_ajax_grant_insight_search', 'gi_ajax_grant_insight_search');
+add_action('wp_ajax_nopriv_grant_insight_search', 'gi_ajax_grant_insight_search');
+
+// 2.6) Export search results as CSV
+function gi_ajax_grant_insight_export_results() {
+    $nonce = isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '';
+    // Nonce is optional here since export may be triggered immediately after search; try both
+    if (!wp_verify_nonce($nonce, 'grant_insight_search_nonce') && !wp_verify_nonce($nonce, 'gi_ajax_nonce')) {
+        wp_send_json_error(array('message' => 'Invalid nonce'), 403);
+    }
+
+    // Reuse the search builder with permissive defaults
+    $_POST['page'] = 1;
+    $_POST['orderby'] = sanitize_text_field($_POST['orderby'] ?? 'date');
+
+    // Build query similar to gi_ajax_grant_insight_search
+    $keyword   = sanitize_text_field($_POST['keyword'] ?? '');
+    $post_type = sanitize_text_field($_POST['post_type'] ?? 'grant');
+    $category  = sanitize_text_field($_POST['category'] ?? '');
+
+    $args = array(
+        'post_type'      => $post_type ? array($post_type) : array('grant'),
+        'post_status'    => 'publish',
+        's'              => $keyword,
+        'posts_per_page' => 200, // cap export size
+        'paged'          => 1,
+        'orderby'        => 'date',
+        'order'          => 'DESC',
+    );
+    if (!empty($category)) {
+        $args['tax_query'] = array(
+            array(
+                'taxonomy' => 'grant_category',
+                'field'    => 'term_id',
+                'terms'    => array(intval($category)),
+            )
+        );
+    }
+
+    $q = new WP_Query($args);
+
+    // Output CSV
+    header('Content-Type: text/csv; charset=UTF-8');
+    header('Content-Disposition: attachment; filename="grant_search_results_' . date('Y-m-d') . '.csv"');
+    $fp = fopen('php://output', 'w');
+    // BOM for Excel (optional)
+    fprintf($fp, chr(0xEF).chr(0xBB).chr(0xBF));
+
+    fputcsv($fp, array('ID','Title','Permalink','Post Type','Date','Amount(yen)','Deadline'));
+    if ($q->have_posts()) {
+        while ($q->have_posts()) { $q->the_post();
+            $pid = get_the_ID();
+            $ptype = get_post_type($pid);
+            $amount_yen = ($ptype === 'grant') ? intval(get_post_meta($pid, 'max_amount_numeric', true)) : 0;
+            $deadline_date = ($ptype === 'grant') ? get_post_meta($pid, 'deadline_date', true) : '';
+            fputcsv($fp, array(
+                $pid,
+                get_the_title($pid),
+                get_permalink($pid),
+                $ptype,
+                get_the_date('Y-m-d', $pid),
+                $amount_yen,
+                $deadline_date,
+            ));
+        }
+        wp_reset_postdata();
+    }
+    fclose($fp);
+    exit;
+}
+add_action('wp_ajax_grant_insight_export_results', 'gi_ajax_grant_insight_export_results');
+add_action('wp_ajax_nopriv_grant_insight_export_results', 'gi_ajax_grant_insight_export_results');
+
 // 3) Newsletter signup (stores emails in option transient-like array)
 function gi_ajax_newsletter_signup() {
     if (!wp_verify_nonce($_POST['nonce'] ?? '', 'gi_ajax_nonce')) {
@@ -1408,7 +1632,7 @@ add_action('wp_ajax_nopriv_get_related_grants', 'gi_ajax_get_related_grants');
  * お気に入り機能（強化版）
  */
 function gi_ajax_toggle_favorite() {
-    if (!wp_verify_nonce($_POST['nonce'], 'gi_ajax_nonce')) {
+    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'gi_ajax_nonce') && !wp_verify_nonce($_POST['nonce'] ?? '', 'grant_insight_search_nonce')) {
         wp_send_json_error('セキュリティチェックに失敗しました');
     }
     
@@ -1460,6 +1684,9 @@ add_action('wp_ajax_nopriv_gi_toggle_favorite', 'gi_ajax_toggle_favorite');
 // Alias for front-page.js 'toggle_favorite'
 add_action('wp_ajax_toggle_favorite', 'gi_ajax_toggle_favorite');
 add_action('wp_ajax_nopriv_toggle_favorite', 'gi_ajax_toggle_favorite');
+// Alias for section-search.php favorite action
+add_action('wp_ajax_grant_insight_toggle_favorite', 'gi_ajax_toggle_favorite');
+add_action('wp_ajax_nopriv_grant_insight_toggle_favorite', 'gi_ajax_toggle_favorite');
 
 /**
  * お気に入り一覧取得
@@ -1479,6 +1706,49 @@ function gi_get_user_favorites($user_id = null) {
     
     return array_map('intval', $favorites);
 }
+
+/**
+ * Sync ACF prefecture meta to grant_prefecture taxonomy on save
+ */
+function gi_sync_grant_prefectures_on_save($post_id, $post, $update) {
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+    if ($post->post_type !== 'grant') return;
+
+    // Try common meta keys
+    $meta_values = array();
+    $candidates = array('prefecture', 'prefectures', 'grant_prefecture');
+    foreach ($candidates as $key) {
+        $val = get_post_meta($post_id, $key, true);
+        if (!empty($val)) {
+            if (is_array($val)) {
+                $meta_values = $val;
+            } else {
+                // Split by comma or pipe if stored as text
+                $meta_values = preg_split('/[,|]/u', $val);
+            }
+            break;
+        }
+    }
+    if (empty($meta_values)) return;
+
+    $term_ids = array();
+    foreach ($meta_values as $raw) {
+        $name = trim(wp_strip_all_tags($raw));
+        if ($name === '') continue;
+        $term = get_term_by('name', $name, 'grant_prefecture');
+        if (!$term) {
+            // Try slug match
+            $term = get_term_by('slug', sanitize_title($name), 'grant_prefecture');
+        }
+        if ($term && !is_wp_error($term)) {
+            $term_ids[] = intval($term->term_id);
+        }
+    }
+    if (!empty($term_ids)) {
+        wp_set_post_terms($post_id, $term_ids, 'grant_prefecture', false);
+    }
+}
+add_action('save_post', 'gi_sync_grant_prefectures_on_save', 20, 3);
 
 /**
  * 投稿カテゴリー取得
