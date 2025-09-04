@@ -32,10 +32,14 @@ get_header(); ?>
                     <!-- メタ情報 -->
                     <div class="flex flex-wrap gap-4 mb-8">
                         <?php 
-                        $grant_amount = get_field('grant_amount');
-                        $application_deadline = get_field('application_deadline');
-                        $grant_category = get_field('grant_category');
-                        $prefecture = get_field('prefecture');
+                        // Use canonical ACF helpers and taxonomies
+                        $grant_amount = function_exists('gi_get_formatted_grant_amount') ? gi_get_formatted_grant_amount(get_the_ID()) : get_post_meta(get_the_ID(), 'max_amount', true);
+                        $application_deadline = function_exists('gi_get_formatted_deadline') ? gi_get_formatted_deadline(get_the_ID()) : get_post_meta(get_the_ID(), 'deadline_text', true);
+                        // Taxonomies
+                        $grant_category_terms = get_the_terms(get_the_ID(), 'grant_category');
+                        $grant_category = ($grant_category_terms && !is_wp_error($grant_category_terms)) ? $grant_category_terms[0]->name : '';
+                        $prefecture_terms = get_the_terms(get_the_ID(), 'grant_prefecture');
+                        $prefecture = ($prefecture_terms && !is_wp_error($prefecture_terms)) ? $prefecture_terms[0]->name : '';
                         ?>
                         
                         <?php if ($grant_amount): ?>
@@ -71,7 +75,7 @@ get_header(); ?>
                         </button>
                         
                         <?php 
-                        $application_url = get_field('application_url');
+                        $application_url = get_field('official_url');
                         if ($application_url): ?>
                         <a href="<?php echo esc_url($application_url); ?>" target="_blank" class="bg-green-500 hover:bg-green-600 px-6 py-3 rounded-lg font-medium transition-colors duration-200">
                             🚀 申請サイトへ
