@@ -335,12 +335,12 @@ if ($is_configured) {
             
             <!-- クイックアクションボタン -->
             <div class="mt-4 flex flex-wrap gap-2">
-                <button type="button" class="quick-action px-4 py-2 bg-white/80 backdrop-blur-sm text-slate-600 rounded-full border border-slate-200 hover:bg-primary hover:text-white transition-all duration-200 text-sm <?php echo !$is_valid ? 'opacity-50 cursor-not-allowed' : ''; ?003e" <?php echo !$is_valid ? 'disabled' : ''; ?>
+                <button type="button" class="quick-action px-4 py-2 bg-white/80 backdrop-blur-sm text-slate-600 rounded-full border border-slate-200 hover:bg-primary hover:text-white transition-all duration-200 text-sm <?php echo !$is_valid ? 'opacity-50 cursor-not-allowed' : ''; ?>" <?php echo !$is_valid ? 'disabled' : ''; ?>
                     data-prompt="ビジネスのアイデアをいくつか提案してください。"
                 >
                     <i class="fas fa-lightbulb mr-2"></i>アイデア提案
                 </button>
-                <button type="button" class="quick-action px-4 py-2 bg-white/80 backdrop-blur-sm text-slate-600 rounded-full border border-slate-200 hover:bg-secondary hover:text-white transition-all duration-200 text-sm <?php echo !$is_valid ? 'opacity-50 cursor-not-allowed' : ''; ?003e" <?php echo !$is_valid ? 'disabled' : ''; ?>
+                <button type="button" class="quick-action px-4 py-2 bg-white/80 backdrop-blur-sm text-slate-600 rounded-full border border-slate-200 hover:bg-secondary hover:text-white transition-all duration-200 text-sm <?php echo !$is_valid ? 'opacity-50 cursor-not-allowed' : ''; ?>" <?php echo !$is_valid ? 'disabled' : ''; ?>
                     data-prompt="ビジネス分析の方法を教えてください。"
                 >
                     <i class="fas fa-chart-line mr-2"></i>ビジネス分析
