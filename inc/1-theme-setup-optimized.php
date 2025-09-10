@@ -88,6 +88,20 @@ function gi_enqueue_scripts() {
     // メインJavaScript（最適化版）
     wp_enqueue_script('gi-main-js', get_template_directory_uri() . '/assets/js/main.js', array('jquery'), GI_THEME_VERSION, true);
     
+    // AIチャットボット用の追加スクリプト
+    if (is_page_template('page-ai-chat.php')) {
+        wp_enqueue_script('ai-chatbot-js', get_template_directory_uri() . '/assets/js/ai-chatbot.js', array('jquery'), GI_THEME_VERSION, true);
+        wp_localize_script('ai-chatbot-js', 'ai_chat_ajax', array(
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('ai_chat_action'),
+            'strings' => array(
+                'sending' => '送信中...',
+                'error' => 'エラーが発生しました',
+                'clear_confirm' => '会話履歴をクリアしてもよろしいですか？'
+            )
+        ));
+    }
+    
     // AJAX設定（最適化版）
     wp_localize_script('gi-main-js', 'gi_ajax', array(
         'ajax_url' => admin_url('admin-ajax.php'),

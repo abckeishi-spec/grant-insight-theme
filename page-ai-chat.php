@@ -1,3 +1,45 @@
+<?php
+/**
+ * Template Name: AIチャットボット
+ * Description: Gemini API統合AIチャットボットページ
+ * Version: 1.0
+ * Author: 中澤圭志
+ */
+
+get_header();
+
+// 必要なクラスを読み込み
+if (!class_exists('Gemini_AI')) {
+    require_once get_template_directory() . '/inc/class-gemini-ai.php';
+}
+if (!class_exists('Chat_History')) {
+    require_once get_template_directory() . '/inc/class-chat-history.php';
+}
+
+// Gemini API設定
+$gemini_api_key = get_option('gemini_api_key', '');
+$gemini_model = get_option('gemini_model', 'gemini-pro');
+
+// チャット履歴管理
+$chat_history = new Chat_History();
+$user_id = get_current_user_id();
+$conversation_history = $chat_history->get_history($user_id);
+
+// 設定検証
+$is_configured = !empty($gemini_api_key);
+$validation_message = '';
+
+if ($is_configured) {
+    $validation_result = Gemini_AI::validate_api_key($gemini_api_key, $gemini_model);
+    $is_valid = !is_wp_error($validation_result);
+    $validation_message = $is_valid ? 'AIサービスは正常に動作しています。' : 'APIキーに問題があります。';
+} else {
+    $is_valid = false;
+    $validation_message = 'Gemini APIキーが設定されていません。';
+}
+
+?}>
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -115,48 +157,30 @@
             .no-print { display: none !important; }
             .chat-container { height: auto !important; max-height: none !important; }
         }
+        
+        /* エラー状態 */
+        .error-state {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border: 2px solid #ef4444;
+        }
+        
+        /* ローディングアニメーション */
+        .loading-spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #3B82F6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
-
-<!-- PHP WordPress Template Header -->
-<!-- <?php
-/*
-Template Name: AIチャットボット
-Description: Gemini API統合AIチャットボットページ
-Version: 1.0
-Author: 中澤さん
-*/
-
-get_header();
-
-// Gemini API設定（後で設定）
-$gemini_api_key = get_option('gemini_api_key', '');
-$gemini_model = get_option('gemini_model', 'gemini-pro');
-
-// セキュリティ設定
-if (!wp_verify_nonce($_POST['chat_nonce'] ?? '', 'ai_chat_action')) {
-    // CSRFプロテクション
-}
-
-// チャット履歴の取得・保存関数（後で実装）
-function get_chat_history() {
-    // セッション履歴取得
-}
-
-function save_chat_message($message, $response) {
-    // メッセージ保存処理
-}
-
-function sanitize_chat_input($input) {
-    return sanitize_text_field(wp_unslash($input));
-}
-
-function call_gemini_api($message) {
-    // Gemini API呼び出し処理（後で実装）
-    return "AI応答のダミーテキストです。";
-}
-?> -->
 
 <!-- メインコンテナ -->
 <div class="container mx-auto px-4 py-8 max-w-6xl">
@@ -174,8 +198,23 @@ function call_gemini_api($message) {
         </p>
     </header>
 
+    <!-- ステータスバー -->
+    <div class="mb-6 p-4 rounded-2xl <?php echo $is_valid ? 'bg-green-100 border border-green-300' : ($is_configured ? 'bg-yellow-100 border border-yellow-300' : 'bg-red-100 border border-red-300'); ?>">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-3 h-3 rounded-full <?php echo $is_valid ? 'bg-green-500' : ($is_configured ? 'bg-yellow-500' : 'bg-red-500'); ?> animate-pulse"></div>
+                <span class="text-sm font-medium <?php echo $is_valid ? 'text-green-800' : ($is_configured ? 'text-yellow-800' : 'text-red-800'); ?>">
+                    <?php echo $validation_message; ?>
+                </span>
+            </div>
+            <div class="text-xs text-gray-600">
+                Model: <?php echo esc_html($gemini_model); ?>
+            </div>
+        </div>
+    </div>
+
     <!-- チャットコンテナ -->
-    <div class="bg-white rounded-3xl shadow-2xl overflow-hidden animate-slide-up">
+    <div id="chatContainer" class="bg-white rounded-3xl shadow-2xl overflow-hidden animate-slide-up <?php echo !$is_valid ? 'opacity-50 pointer-events-none' : ''; ?>">
         
         <!-- チャットヘッダー -->
         <div class="gradient-animation p-6 text-white">
@@ -210,33 +249,30 @@ function call_gemini_api($message) {
                 </div>
             </div>
 
-            <!-- PHPで動的に生成されるチャット履歴 -->
-            <!-- <?php
-            $chat_history = get_chat_history();
-            if ($chat_history) {
-                foreach ($chat_history as $chat) {
-                    if ($chat['type'] === 'user') {
-                        echo '<div class="flex items-start justify-end space-x-3">';
-                        echo '<div class="bg-gradient-to-r from-accent to-primary text-white p-4 rounded-2xl rounded-tr-lg max-w-md message-shadow">';
-                        echo '<p>' . esc_html($chat['message']) . '</p>';
-                        echo '</div>';
-                        echo '<div class="w-10 h-10 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center flex-shrink-0">';
-                        echo '<i class="fas fa-user text-white text-sm"></i>';
-                        echo '</div>';
-                        echo '</div>';
-                    } else {
-                        echo '<div class="flex items-start space-x-3">';
-                        echo '<div class="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center flex-shrink-0">';
-                        echo '<i class="fas fa-robot text-white text-sm"></i>';
-                        echo '</div>';
-                        echo '<div class="bg-gradient-to-r from-slate-100 to-slate-200 text-slate-800 p-4 rounded-2xl rounded-tl-lg max-w-md message-shadow">';
-                        echo '<p>' . wp_kses_post($chat['message']) . '</p>';
-                        echo '</div>';
-                        echo '</div>';
-                    }
-                }
-            }
-            ?> -->
+            <!-- 既存のチャット履歴を表示 -->
+            <?php if (!empty($conversation_history)): ?>
+                <?php foreach ($conversation_history as $chat): ?>
+                    <?php if ($chat['type'] === 'user'): ?>
+                        <div class="flex items-start justify-end space-x-3 animate-message-in">
+                            <div class="bg-gradient-to-r from-accent to-primary text-white p-4 rounded-2xl rounded-tr-lg max-w-md message-shadow">
+                                <p><?php echo esc_html($chat['message']); ?></p>
+                            </div>
+                            <div class="w-10 h-10 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-user text-white text-sm"></i>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <div class="flex items-start space-x-3 animate-message-in">
+                            <div class="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-robot text-white text-sm"></i>
+                            </div>
+                            <div class="bg-gradient-to-r from-slate-100 to-slate-200 text-slate-800 p-4 rounded-2xl rounded-tl-lg max-w-md message-shadow">
+                                <p><?php echo wp_kses_post($chat['message']); ?></p>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            <?php endif; ?>
 
         </div>
 
@@ -262,7 +298,7 @@ function call_gemini_api($message) {
         <!-- メッセージ入力エリア -->
         <div class="p-6 bg-gradient-to-r from-slate-50 to-blue-50 border-t border-slate-200">
             <form id="chatForm" class="flex space-x-4">
-                <!-- <?php wp_nonce_field('ai_chat_action', 'chat_nonce'); ?> -->
+                <?php wp_nonce_field('ai_chat_action', 'chat_nonce'); ?>
                 
                 <div class="flex-1 relative">
                     <textarea 
@@ -272,6 +308,7 @@ function call_gemini_api($message) {
                         placeholder="メッセージを入力してください..." 
                         class="w-full p-4 pr-12 border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none transition-all duration-300 bg-white/80 backdrop-blur-sm"
                         maxlength="1000"
+                        <?php echo !$is_valid ? 'disabled' : ''; ?>
                     ></textarea>
                     
                     <!-- 文字数カウンター -->
@@ -280,7 +317,7 @@ function call_gemini_api($message) {
                     </div>
                     
                     <!-- 音声入力ボタン -->
-                    <button type="button" id="voiceBtn" class="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 text-slate-400 hover:text-primary transition-colors duration-200">
+                    <button type="button" id="voiceBtn" class="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 text-slate-400 hover:text-primary transition-colors duration-200 <?php echo !$is_valid ? 'hidden' : ''; ?>">
                         <i class="fas fa-microphone"></i>
                     </button>
                 </div>
@@ -288,7 +325,8 @@ function call_gemini_api($message) {
                 <button 
                     type="submit" 
                     id="sendBtn"
-                    class="px-8 py-4 bg-gradient-to-r from-primary to-secondary text-white rounded-2xl hover:from-primary/90 hover:to-secondary/90 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 shadow-lg"
+                    class="px-8 py-4 bg-gradient-to-r from-primary to-secondary text-white rounded-2xl hover:from-primary/90 hover:to-secondary/90 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 shadow-lg <?php echo !$is_valid ? 'opacity-50 cursor-not-allowed' : ''; ?>"
+                    <?php echo !$is_valid ? 'disabled' : ''; ?>
                 >
                     <i class="fas fa-paper-plane"></i>
                     <span class="hidden sm:inline">送信</span>
@@ -297,21 +335,51 @@ function call_gemini_api($message) {
             
             <!-- クイックアクションボタン -->
             <div class="mt-4 flex flex-wrap gap-2">
-                <button type="button" class="quick-action px-4 py-2 bg-white/80 backdrop-blur-sm text-slate-600 rounded-full border border-slate-200 hover:bg-primary hover:text-white transition-all duration-200 text-sm">
+                <button type="button" class="quick-action px-4 py-2 bg-white/80 backdrop-blur-sm text-slate-600 rounded-full border border-slate-200 hover:bg-primary hover:text-white transition-all duration-200 text-sm <?php echo !$is_valid ? 'opacity-50 cursor-not-allowed' : ''; ?003e" <?php echo !$is_valid ? 'disabled' : ''; ?>
+                    data-prompt="ビジネスのアイデアをいくつか提案してください。"
+                >
                     <i class="fas fa-lightbulb mr-2"></i>アイデア提案
                 </button>
-                <button type="button" class="quick-action px-4 py-2 bg-white/80 backdrop-blur-sm text-slate-600 rounded-full border border-slate-200 hover:bg-secondary hover:text-white transition-all duration-200 text-sm">
+                <button type="button" class="quick-action px-4 py-2 bg-white/80 backdrop-blur-sm text-slate-600 rounded-full border border-slate-200 hover:bg-secondary hover:text-white transition-all duration-200 text-sm <?php echo !$is_valid ? 'opacity-50 cursor-not-allowed' : ''; ?003e" <?php echo !$is_valid ? 'disabled' : ''; ?>
+                    data-prompt="ビジネス分析の方法を教えてください。"
+                >
                     <i class="fas fa-chart-line mr-2"></i>ビジネス分析
                 </button>
-                <button type="button" class="quick-action px-4 py-2 bg-white/80 backdrop-blur-sm text-slate-600 rounded-full border border-slate-200 hover:bg-accent hover:text-white transition-all duration-200 text-sm">
+                <button type="button" class="quick-action px-4 py-2 bg-white/80 backdrop-blur-sm text-slate-600 rounded-full border border-slate-200 hover:bg-accent hover:text-white transition-all duration-200 text-sm <?php echo !$is_valid ? 'opacity-50 cursor-not-allowed' : ''; ?>" <?php echo !$is_valid ? 'disabled' : ''; ?>
+                    data-prompt="技術的な問題の解決方法を教えてください。"
+                >
                     <i class="fas fa-code mr-2"></i>技術サポート
                 </button>
-                <button type="button" class="quick-action px-4 py-2 bg-white/80 backdrop-blur-sm text-slate-600 rounded-full border border-slate-200 hover:bg-success hover:text-white transition-all duration-200 text-sm">
+                <button type="button" class="quick-action px-4 py-2 bg-white/80 backdrop-blur-sm text-slate-600 rounded-full border border-slate-200 hover:bg-success hover:text-white transition-all duration-200 text-sm <?php echo !$is_valid ? 'opacity-50 cursor-not-allowed' : ''; ?>" <?php echo !$is_valid ? 'disabled' : ''; ?>
+                    data-prompt="よくある質問について答えてください。"
+                >
                     <i class="fas fa-question-circle mr-2"></i>FAQ
+                </button>
+            </div>
+            
+            <!-- 履歴クリアボタン -->
+            <div class="mt-4 text-center">
+                <button type="button" id="clearHistoryBtn" class="text-sm text-slate-500 hover:text-red-600 transition-colors duration-200 <?php echo !$is_valid ? 'hidden' : ''; ?>">
+                    <i class="fas fa-trash-alt mr-1"></i>会話履歴をクリア
                 </button>
             </div>
         </div>
     </div>
+
+    <!-- 設定エラー表示 -->
+    <?php if (!$is_valid): ?>
+    <div class="mt-6 p-6 bg-red-100 border border-red-300 rounded-2xl">
+        <div class="flex items-center space-x-3">
+            <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
+            <div>
+                <h3 class="text-red-800 font-semibold">AIチャットボットの設定が必要です</h3>
+                <p class="text-red-700 text-sm mt-1">
+                    この機能を使用するには、Gemini APIキーの設定が必要です。WordPress管理画面の設定メニューからAPIキーを設定してください。
+                </p>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <!-- 機能説明セクション -->
     <div class="mt-12 grid md:grid-cols-3 gap-8">
@@ -353,6 +421,34 @@ document.addEventListener('DOMContentLoaded', function() {
     const charCount = document.getElementById('charCount');
     const quickActions = document.querySelectorAll('.quick-action');
     const voiceBtn = document.getElementById('voiceBtn');
+    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+    const chatContainer = document.getElementById('chatContainer');
+    
+    let isProcessing = false;
+    
+    // 設定検証
+    function validateSettings() {
+        const formData = new FormData();
+        formData.append('action', 'ai_chat_validate_settings');
+        formData.append('nonce', document.querySelector('input[name="chat_nonce"]')?.value || '');
+        
+        fetch('<?php echo admin_url("admin-ajax.php"); ?>', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('AI Chat Settings:', data.data);
+            }
+        })
+        .catch(error => {
+            console.error('Settings validation error:', error);
+        });
+    }
+    
+    // 初期化時に設定を検証
+    validateSettings();
     
     // 文字数カウンター
     messageInput.addEventListener('input', function() {
@@ -367,7 +463,9 @@ document.addEventListener('DOMContentLoaded', function() {
     messageInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            chatForm.dispatchEvent(new Event('submit'));
+            if (!isProcessing && this.value.trim()) {
+                chatForm.dispatchEvent(new Event('submit'));
+            }
         }
     });
     
@@ -375,8 +473,15 @@ document.addEventListener('DOMContentLoaded', function() {
     chatForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
+        if (isProcessing) return;
+        
         const message = messageInput.value.trim();
         if (!message) return;
+        
+        // UI状態を更新
+        isProcessing = true;
+        messageInput.disabled = true;
+        sendBtn.disabled = true;
         
         // ユーザーメッセージを追加
         addMessage(message, 'user');
@@ -385,7 +490,6 @@ document.addEventListener('DOMContentLoaded', function() {
         messageInput.style.height = 'auto';
         
         // 送信ボタンを無効化
-        sendBtn.disabled = true;
         sendBtn.innerHTML = '<i class="fas fa-spinner animate-spin"></i><span class="hidden sm:inline ml-2">送信中...</span>';
         
         // タイピングインジケーターを表示
@@ -394,11 +498,11 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             // PHP/WordPress AJAX処理
             const formData = new FormData();
-            formData.append('action', 'send_chat_message');
+            formData.append('action', 'ai_chat_send_message');
             formData.append('message', message);
             formData.append('nonce', document.querySelector('input[name="chat_nonce"]')?.value || '');
             
-            const response = await fetch('<!-- <?php echo admin_url("admin-ajax.php"); ?> -->', {
+            const response = await fetch('<?php echo admin_url("admin-ajax.php"); ?>', {
                 method: 'POST',
                 body: formData
             });
@@ -411,14 +515,23 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 // AI応答を追加
                 addMessage(data.data.response, 'ai');
+                
+                // 統計情報を更新（オプション）
+                if (data.data.stats) {
+                    console.log('Chat stats:', data.data.stats);
+                }
             } else {
-                addMessage('申し訳ございません。エラーが発生しました。しばらく時間をおいて再度お試しください。', 'ai', true);
+                // エラーメッセージを表示
+                addMessage('申し訳ございません。エラーが発生しました: ' + (data.data || '不明なエラー'), 'ai', true);
             }
         } catch (error) {
+            console.error('Chat error:', error);
             hideTypingIndicator();
             addMessage('接続エラーが発生しました。インターネット接続をご確認の上、再度お試しください。', 'ai', true);
         } finally {
-            // 送信ボタンを有効化
+            // UI状態を復元
+            isProcessing = false;
+            messageInput.disabled = false;
             sendBtn.disabled = false;
             sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i><span class="hidden sm:inline ml-2">送信</span>';
         }
@@ -477,12 +590,56 @@ document.addEventListener('DOMContentLoaded', function() {
     // クイックアクション
     quickActions.forEach(btn => {
         btn.addEventListener('click', function() {
-            const text = this.textContent.trim();
-            messageInput.value = text;
-            messageInput.focus();
-            charCount.textContent = text.length;
+            if (isProcessing || !isValid) return;
+            
+            const prompt = this.getAttribute('data-prompt');
+            if (prompt) {
+                messageInput.value = prompt;
+                messageInput.focus();
+                charCount.textContent = prompt.length;
+            }
         });
     });
+    
+    // 履歴クリア
+    if (clearHistoryBtn) {
+        clearHistoryBtn.addEventListener('click', async function() {
+            if (!confirm('会話履歴をクリアしてもよろしいですか？')) return;
+            
+            try {
+                const formData = new FormData();
+                formData.append('action', 'ai_chat_clear_history');
+                formData.append('nonce', document.querySelector('input[name="chat_nonce"]')?.value || '');
+                
+                const response = await fetch('<?php echo admin_url("admin-ajax.php"); ?>', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // チャット履歴をクリア
+                    chatHistory.innerHTML = `
+                        <div class="flex items-start space-x-3 animate-message-in">
+                            <div class="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-robot text-white text-sm"></i>
+                            </div>
+                            <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-2xl rounded-tl-lg max-w-md message-shadow">
+                                <p class="text-sm mb-2">👋 こんにちは！</p>
+                                <p>私はGemini AIアシスタントです。ビジネスに関するご質問、技術的なサポート、創作活動のお手伝いなど、何でもお気軽にお聞かせください。</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    alert('履歴のクリアに失敗しました。');
+                }
+            } catch (error) {
+                console.error('Clear history error:', error);
+                alert('エラーが発生しました。');
+            }
+        });
+    }
     
     // 音声入力（ブラウザ対応の場合）
     if ('webkitSpeechRecognition' in window) {
@@ -491,6 +648,8 @@ document.addEventListener('DOMContentLoaded', function() {
         recognition.continuous = false;
         
         voiceBtn.addEventListener('click', function() {
+            if (isProcessing || !isValid) return;
+            
             recognition.start();
             this.innerHTML = '<i class="fas fa-microphone-slash animate-pulse"></i>';
         });
@@ -518,80 +677,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<!-- PHP WordPress Template Footer -->
-<!-- <?php
-// AJAX処理用フック（functions.phpに追加）
-/*
-add_action('wp_ajax_send_chat_message', 'handle_chat_message');
-add_action('wp_ajax_nopriv_send_chat_message', 'handle_chat_message');
-
-function handle_chat_message() {
-    // ノンス検証
-    if (!wp_verify_nonce($_POST['nonce'], 'ai_chat_action')) {
-        wp_die('Security check failed');
-    }
-    
-    $message = sanitize_chat_input($_POST['message']);
-    
-    if (empty($message)) {
-        wp_send_json_error('メッセージが空です。');
-        return;
-    }
-    
-    // Gemini API呼び出し
-    $ai_response = call_gemini_api($message);
-    
-    // チャット履歴保存
-    save_chat_message($message, $ai_response);
-    
-    wp_send_json_success(array(
-        'response' => $ai_response,
-        'timestamp' => current_time('mysql')
-    ));
-}
-
-// Gemini API関数の実装例
-function call_gemini_api($message) {
-    $api_key = get_option('gemini_api_key');
-    $model = get_option('gemini_model', 'gemini-pro');
-    
-    $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$api_key}";
-    
-    $data = array(
-        'contents' => array(
-            array(
-                'parts' => array(
-                    array('text' => $message)
-                )
-            )
-        )
-    );
-    
-    $response = wp_remote_post($url, array(
-        'headers' => array(
-            'Content-Type' => 'application/json',
-        ),
-        'body' => json_encode($data),
-        'timeout' => 30
-    ));
-    
-    if (is_wp_error($response)) {
-        return 'APIエラーが発生しました。';
-    }
-    
-    $body = wp_remote_retrieve_body($response);
-    $result = json_decode($body, true);
-    
-    if (isset($result['candidates'][0]['content']['parts'][0]['text'])) {
-        return $result['candidates'][0]['content']['parts'][0]['text'];
-    }
-    
-    return 'AI応答を取得できませんでした。';
-}
-*/
-
-get_footer();
-?> -->
-
-</body>
-</html>
+<?php get_footer(); ?>

@@ -26,6 +26,11 @@ require_once $inc_dir . '7-acf-setup.php';       // ACF関連
 require_once $inc_dir . '8-initial-setup.php';   // 初期データ投入
 require_once $inc_dir . 'performance-helpers.php'; // パフォーマンス最適化ヘルパー
 
+// AIチャットボット機能
+require_once $inc_dir . 'class-gemini-ai.php';      // Gemini AI API統合クラス
+require_once $inc_dir . 'class-chat-history.php'; // チャット履歴管理クラス
+require_once $inc_dir . 'ai-chatbot-settings.php'; // AIチャットボット設定ページ
+
 /**
  * テーマの最終初期化
  */

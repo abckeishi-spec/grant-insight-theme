@@ -1234,3 +1234,230 @@ function gi_ajax_deactivation_cleanup() {
     wp_clear_scheduled_hook('gi_daily_cleanup');
 }
 register_deactivation_hook(__FILE__, 'gi_ajax_deactivation_cleanup');
+
+/**
+ * 【新機能】AIチャットボット - メッセージ送信処理
+ */
+function ai_chat_send_message() {
+    // セキュリティチェック
+    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'ai_chat_action')) {
+        wp_send_json_error('セキュリティチェックに失敗しました。');
+    }
+    
+    // 入力検証
+    $message = sanitize_text_field($_POST['message'] ?? '');
+    if (empty($message)) {
+        wp_send_json_error('メッセージが空です。');
+    }
+    
+    // メッセージ長さの制限
+    if (strlen($message) > 1000) {
+        wp_send_json_error('メッセージが長すぎます。1000文字以内で入力してください。');
+    }
+    
+    try {
+        // 必要なクラスを読み込み
+        if (!class_exists('Gemini_AI')) {
+            require_once get_template_directory() . '/inc/class-gemini-ai.php';
+        }
+        if (!class_exists('Chat_History')) {
+            require_once get_template_directory() . '/inc/class-chat-history.php';
+        }
+        
+        // Gemini APIキーの確認
+        $api_key = get_option('gemini_api_key', '');
+        if (empty($api_key)) {
+            wp_send_json_error('AIサービスが設定されていません。管理者に連絡してください。');
+        }
+        
+        // チャット履歴管理
+        $chat_history = new Chat_History();
+        $user_id = get_current_user_id();
+        
+        // ユーザーのメッセージを履歴に追加
+        $chat_history->add_message($message, 'user', $user_id);
+        
+        // 現在の会話履歴を取得
+        $conversation_history = $chat_history->get_history($user_id);
+        
+        // Gemini AIで応答を生成
+        $gemini = new Gemini_AI($api_key);
+        $ai_response = $gemini->generate_response($message, $conversation_history);
+        
+        if (empty($ai_response)) {
+            throw new Exception('AI応答の生成に失敗しました。');
+        }
+        
+        // AIの応答を履歴に追加
+        $chat_history->add_message($ai_response, 'ai', $user_id);
+        
+        // 会話の統計情報を取得
+        $stats = $chat_history->get_stats($user_id);
+        
+        // 成功レスポンス
+        wp_send_json_success(array(
+            'response' => $ai_response,
+            'timestamp' => current_time('mysql'),
+            'stats' => $stats,
+            'message_id' => uniqid('msg_'),
+            'user_id' => $user_id
+        ));
+        
+    } catch (Exception $e) {
+        // エラーログ
+        error_log('AI Chat Error: ' . $e->getMessage());
+        
+        // ユーザーフレンドリーなエラーメッセージ
+        $error_messages = [
+            'APIエラー' => 'AIサービスに一時的な問題が発生しています。しばらく時間をおいて再度お試しください。',
+            'ネットワークエラー' => 'ネットワーク接続に問題があります。インターネット接続を確認してください。',
+            '設定エラー' => 'AIサービスの設定に問題があります。管理者に連絡してください。'
+        ];
+        
+        $error_message = 'AI応答の生成中にエラーが発生しました。しばらく時間をおいて再度お試しください。';
+        
+        foreach ($error_messages as $key => $msg) {
+            if (strpos($e->getMessage(), $key) !== false) {
+                $error_message = $msg;
+                break;
+            }
+        }
+        
+        wp_send_json_error($error_message);
+    }
+}
+add_action('wp_ajax_ai_chat_send_message', 'ai_chat_send_message');
+add_action('wp_ajax_nopriv_ai_chat_send_message', 'ai_chat_send_message');
+
+/**
+ * 【新機能】AIチャットボット - 履歴取得
+ */
+function ai_chat_get_history() {
+    // セキュリティチェック
+    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'ai_chat_action')) {
+        wp_send_json_error('セキュリティチェックに失敗しました。');
+    }
+    
+    try {
+        // チャット履歴管理
+        $chat_history = new Chat_History();
+        $user_id = get_current_user_id();
+        
+        // 履歴を取得
+        $history = $chat_history->get_history($user_id);
+        $stats = $chat_history->get_stats($user_id);
+        
+        // 成功レスポンス
+        wp_send_json_success(array(
+            'history' => $history,
+            'stats' => $stats,
+            'has_history' => !empty($history),
+            'user_id' => $user_id
+        ));
+        
+    } catch (Exception $e) {
+        error_log('AI Chat History Error: ' . $e->getMessage());
+        wp_send_json_error('履歴の取得中にエラーが発生しました。');
+    }
+}
+add_action('wp_ajax_ai_chat_get_history', 'ai_chat_get_history');
+add_action('wp_ajax_nopriv_ai_chat_get_history', 'ai_chat_get_history');
+
+/**
+ * 【新機能】AIチャットボット - 履歴クリア
+ */
+function ai_chat_clear_history() {
+    // セキュリティチェック
+    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'ai_chat_action')) {
+        wp_send_json_error('セキュリティチェックに失敗しました。');
+    }
+    
+    try {
+        // チャット履歴管理
+        $chat_history = new Chat_History();
+        $user_id = get_current_user_id();
+        
+        // 履歴をクリア
+        $result = $chat_history->clear_history($user_id);
+        
+        if ($result) {
+            wp_send_json_success(array(
+                'message' => '会話履歴をクリアしました。',
+                'user_id' => $user_id
+            ));
+        } else {
+            wp_send_json_error('履歴のクリアに失敗しました。');
+        }
+        
+    } catch (Exception $e) {
+        error_log('AI Chat Clear History Error: ' . $e->getMessage());
+        wp_send_json_error('履歴のクリア中にエラーが発生しました。');
+    }
+}
+add_action('wp_ajax_ai_chat_clear_history', 'ai_chat_clear_history');
+add_action('wp_ajax_nopriv_ai_chat_clear_history', 'ai_chat_clear_history');
+
+/**
+ * 【新機能】AIチャットボット - 設定検証
+ */
+function ai_chat_validate_settings() {
+    // セキュリティチェック
+    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'ai_chat_action')) {
+        wp_send_json_error('セキュリティチェックに失敗しました。');
+    }
+    
+    try {
+        // Gemini API設定の確認
+        $api_key = get_option('gemini_api_key', '');
+        $model = get_option('gemini_model', 'gemini-pro');
+        
+        if (empty($api_key)) {
+            wp_send_json_success(array(
+                'valid' => false,
+                'message' => 'Gemini APIキーが設定されていません。',
+                'settings' => [
+                    'has_api_key' => false,
+                    'model' => $model
+                ]
+            ));
+        }
+        
+        // APIキーの検証
+        if (!class_exists('Gemini_AI')) {
+            require_once get_template_directory() . '/inc/class-gemini-ai.php';
+        }
+        
+        $validation_result = Gemini_AI::validate_api_key($api_key, $model);
+        
+        if (is_wp_error($validation_result)) {
+            wp_send_json_success(array(
+                'valid' => false,
+                'message' => 'APIキーが無効です: ' . $validation_result->get_error_message(),
+                'settings' => [
+                    'has_api_key' => true,
+                    'model' => $model
+                ]
+            ));
+        }
+        
+        // 成功
+        wp_send_json_success(array(
+            'valid' => true,
+            'message' => 'AIチャットボットは正常に動作しています。',
+            'settings' => [
+                'has_api_key' => true,
+                'model' => $model,
+                'model_info' => [
+                    'name' => $model,
+                    'description' => 'Gemini AI チャットモデル'
+                ]
+            ]
+        ));
+        
+    } catch (Exception $e) {
+        error_log('AI Chat Validation Error: ' . $e->getMessage());
+        wp_send_json_error('設定検証中にエラーが発生しました。');
+    }
+}
+add_action('wp_ajax_ai_chat_validate_settings', 'ai_chat_validate_settings');
+add_action('wp_ajax_nopriv_ai_chat_validate_settings', 'ai_chat_validate_settings');
