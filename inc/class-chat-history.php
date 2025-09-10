@@ -1,9 +1,9 @@
 <?php
 /**
- * チャット履歴管理クラス
+ * WordPressネイティブチャット履歴管理クラス
  * 
  * @package WordPress_AI_Chatbot
- * @version 1.0.0
+ * @version 2.0.0
  * @author 中澤圭志
  */
 
@@ -21,291 +21,279 @@ class Chat_History {
      * コンストラクタ
      */
     public function __construct() {
-        // セッションの初期化
-        if (!session_id()) {
-            session_start();
+        // WordPressのネイティブなセッション管理を使用
+        if (!function_exists('wp_cache_get')) {
+            // キャッシュが利用可能な場合のみ初期化
+            $this->initialize_session_storage();
         }
         
         // 古い会話履歴のクリーンアップ
-        $this->cleanup_old_conversations();
+        add_action('init', array($this, 'cleanup_old_conversations'));
     }
     
     /**
-     * チャット履歴を取得
+     * セッションストレージの初期化
      */
-    public function get_history($user_id = null) {
-        $session_id = $this->get_session_id();
-        $key = $this->session_key . '_' . $session_id;
-        
-        // ログインユーザーの場合はユーザーIDベースで取得
-        if ($user_id) {
-            $history = get_user_meta($user_id, 'ai_chat_history', true);
-        } else {
-            $history = isset($_SESSION[$key]) ? $_SESSION[$key] : [];
+    private function initialize_session_storage() {
+        // WordPress Transients APIを使用
+        // これはデータベースベースの一時的なストレージ
+        if (!wp_cache_get($this->session_key . '_initialized', 'ai_chat')) {
+            wp_cache_set($this->session_key . '_initialized', true, 'ai_chat', $this->conversation_timeout);
         }
-        
-        if (!is_array($history)) {
-            $history = [];
-        }
-        
-        // タイムスタンプでソート
-        usort($history, function($a, $b) {
-            return strtotime($a['timestamp']) - strtotime($b['timestamp']);
-        });
-        
-        return $history;
     }
     
     /**
      * メッセージを追加
      */
-    public function add_message($message, $type, $user_id = null) {
+    public function add_message($message, $type = 'user', $user_id = null) {
         if (empty($message)) {
             return false;
         }
         
-        $session_id = $this->get_session_id();
-        $key = $this->session_key . '_' . $session_id;
+        $user_id = $user_id ?: get_current_user_id();
+        $timestamp = current_time('mysql');
         
-        $history = $this->get_history($user_id);
-        
-        // 新しいメッセージを追加
-        $new_message = [
+        $chat_data = array(
             'message' => sanitize_text_field($message),
-            'type' => $type === 'user' ? 'user' : 'ai',
-            'timestamp' => current_time('mysql'),
-            'session_id' => $session_id
-        ];
+            'type' => sanitize_text_field($type),
+            'timestamp' => $timestamp,
+            'message_id' => uniqid('msg_')
+        );
         
-        $history[] = $new_message;
+        // ユーザーベースの履歴管理
+        if ($user_id > 0) {
+            return $this->add_user_message($user_id, $chat_data);
+        } else {
+            return $this->add_guest_message($chat_data);
+        }
+    }
+    
+    /**
+     * ユーザーメッセージを追加
+     */
+    private function add_user_message($user_id, $chat_data) {
+        $history = get_user_meta($user_id, $this->session_key, true);
+        if (!is_array($history)) {
+            $history = array();
+        }
         
-        // 履歴の長さを制限
+        $history[] = $chat_data;
+        
+        // 履歴の長さ制限
         if (count($history) > $this->max_history_length) {
             $history = array_slice($history, -$this->max_history_length);
         }
         
-        // 保存
-        if ($user_id) {
-            update_user_meta($user_id, 'ai_chat_history', $history);
-        } else {
-            $_SESSION[$key] = $history;
-        }
-        
-        return true;
+        return update_user_meta($user_id, $this->session_key, $history);
     }
     
     /**
-     * チャット履歴をクリア
+     * ゲストメッセージを追加（一時的なストレージ）
+     */
+    private function add_guest_message($chat_data) {
+        $guest_id = $this->get_guest_id();
+        $transient_key = $this->session_key . '_guest_' . $guest_id;
+        
+        $history = get_transient($transient_key);
+        if (!is_array($history)) {
+            $history = array();
+        }
+        
+        $history[] = $chat_data;
+        
+        // 履歴の長さ制限
+        if (count($history) > $this->max_history_length) {
+            $history = array_slice($history, -$this->max_history_length);
+        }
+        
+        return set_transient($transient_key, $history, $this->conversation_timeout);
+    }
+    
+    /**
+     * 会話履歴を取得
+     */
+    public function get_history($user_id = null) {
+        $user_id = $user_id ?: get_current_user_id();
+        
+        if ($user_id > 0) {
+            return $this->get_user_history($user_id);
+        } else {
+            return $this->get_guest_history();
+        }
+    }
+    
+    /**
+     * ユーザーの会話履歴を取得
+     */
+    private function get_user_history($user_id) {
+        $history = get_user_meta($user_id, $this->session_key, true);
+        return is_array($history) ? $history : array();
+    }
+    
+    /**
+     * ゲストの会話履歴を取得
+     */
+    private function get_guest_history() {
+        $guest_id = $this->get_guest_id();
+        $transient_key = $this->session_key . '_guest_' . $guest_id;
+        
+        $history = get_transient($transient_key);
+        return is_array($history) ? $history : array();
+    }
+    
+    /**
+     * ゲストIDを生成
+     */
+    private function get_guest_id() {
+        // IPアドレスとユーザーエージェントを使用
+        $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'unknown';
+        $ua = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'unknown';
+        
+        return substr(md5($ip . $ua), 0, 16);
+    }
+    
+    /**
+     * 会話履歴をクリア
      */
     public function clear_history($user_id = null) {
-        $session_id = $this->get_session_id();
-        $key = $this->session_key . '_' . $session_id;
+        $user_id = $user_id ?: get_current_user_id();
         
-        if ($user_id) {
-            delete_user_meta($user_id, 'ai_chat_history');
+        if ($user_id > 0) {
+            return delete_user_meta($user_id, $this->session_key);
         } else {
-            unset($_SESSION[$key]);
+            return $this->clear_guest_history();
         }
+    }
+    
+    /**
+     * ゲストの会話履歴をクリア
+     */
+    private function clear_guest_history() {
+        $guest_id = $this->get_guest_id();
+        $transient_key = $this->session_key . '_guest_' . $guest_id;
+        return delete_transient($transient_key);
+    }
+    
+    /**
+     * 古い会話履歴をクリーンアップ
+     */
+    public function cleanup_old_conversations() {
+        // 古いトランジェントを削除（1時間以上前のもの）
+        global $wpdb;
+        
+        $expired_time = time() - $this->conversation_timeout;
+        
+        $wpdb->query($wpdb->prepare(
+            "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s AND option_name LIKE %s",
+            $wpdb->esc_like('_transient_' . $this->session_key) . '%',
+            $wpdb->esc_like('_transient_timeout_' . $this->session_key) . '%'
+        ));
         
         return true;
     }
     
     /**
-     * 会話の統計情報を取得
+     * 統計情報を取得
      */
     public function get_stats($user_id = null) {
+        $user_id = $user_id ?: get_current_user_id();
         $history = $this->get_history($user_id);
         
-        $stats = [
-            'total_messages' => count($history),
-            'user_messages' => 0,
-            'ai_messages' => 0,
-            'first_message_date' => null,
-            'last_message_date' => null,
-            'conversation_duration' => null
-        ];
-        
-        if (empty($history)) {
-            return $stats;
+        if (!is_array($history) || empty($history)) {
+            return array(
+                'total_messages' => 0,
+                'user_messages' => 0,
+                'ai_messages' => 0,
+                'first_message' => null,
+                'last_message' => null
+            );
         }
         
+        $total_messages = count($history);
+        $user_messages = 0;
+        $ai_messages = 0;
+        
         foreach ($history as $message) {
-            if ($message['type'] === 'user') {
-                $stats['user_messages']++;
-            } else {
-                $stats['ai_messages']++;
+            if (isset($message['type'])) {
+                if ($message['type'] === 'user') {
+                    $user_messages++;
+                } elseif ($message['type'] === 'ai') {
+                    $ai_messages++;
+                }
             }
         }
         
-        // 最初と最後のメッセージ日時
-        $first_message = reset($history);
-        $last_message = end($history);
-        
-        $stats['first_message_date'] = $first_message['timestamp'];
-        $stats['last_message_date'] = $last_message['timestamp'];
-        
-        // 会話期間（分）
-        $first_time = strtotime($first_message['timestamp']);
-        $last_time = strtotime($last_message['timestamp']);
-        $stats['conversation_duration'] = round(($last_time - $first_time) / 60, 1);
-        
-        return $stats;
+        return array(
+            'total_messages' => $total_messages,
+            'user_messages' => $user_messages,
+            'ai_messages' => $ai_messages,
+            'first_message' => isset($history[0]['timestamp']) ? $history[0]['timestamp'] : null,
+            'last_message' => isset($history[$total_messages - 1]['timestamp']) ? $history[$total_messages - 1]['timestamp'] : null
+        );
     }
     
     /**
-     * 会話の要約を生成
+     * 履歴をエクスポート
      */
-    public function get_conversation_summary($user_id = null) {
+    public function export_history($format = 'json', $user_id = null) {
+        $user_id = $user_id ?: get_current_user_id();
         $history = $this->get_history($user_id);
         
-        if (empty($history)) {
-            return '';
+        if (!is_array($history) || empty($history)) {
+            return false;
         }
-        
-        // Gemini AIを使用して要約を生成
-        $gemini = new Gemini_AI();
-        return $gemini->summarize_conversation($history);
-    }
-    
-    /**
-     * エクスポート用のデータを取得
-     */
-    public function export_history($user_id = null, $format = 'json') {
-        $history = $this->get_history($user_id);
-        $stats = $this->get_stats($user_id);
-        
-        $export_data = [
-            'export_info' => [
-                'exported_at' => current_time('mysql'),
-                'format' => $format,
-                'user_id' => $user_id,
-                'session_id' => $this->get_session_id()
-            ],
-            'stats' => $stats,
-            'messages' => $history
-        ];
         
         switch ($format) {
             case 'json':
-                return json_encode($export_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                return json_encode($history, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
                 
             case 'csv':
-                return $this->convert_to_csv($export_data);
+                return $this->export_to_csv($history);
                 
             case 'txt':
-                return $this->convert_to_txt($export_data);
+                return $this->export_to_txt($history);
                 
             default:
-                return json_encode($export_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                return false;
         }
     }
     
     /**
-     * CSV形式に変換
+     * CSV形式でエクスポート
      */
-    private function convert_to_csv($data) {
-        $csv = "日時,種類,メッセージ\n";
+    private function export_to_csv($history) {
+        $csv = "日時,タイプ,メッセージ\n";
         
-        foreach ($data['messages'] as $message) {
-            $type = ($message['type'] === 'user') ? 'ユーザー' : 'AI';
-            $message_text = str_replace('"', '""', $message['message']); // CSVエスケープ
-            $csv .= "{$message['timestamp']},{$type},\"{$message_text}\"\n";
+        foreach ($history as $message) {
+            $csv .= sprintf(
+                '"%s","%s","%s"' . "\n",
+                isset($message['timestamp']) ? $message['timestamp'] : '',
+                isset($message['type']) ? $message['type'] : '',
+                isset($message['message']) ? str_replace('"', '""', $message['message']) : ''
+            );
         }
         
         return $csv;
     }
     
     /**
-     * テキスト形式に変換
+     * テキスト形式でエクスポート
      */
-    private function convert_to_txt($data) {
-        $txt = "=== AIチャット履歴エクスポート ===\n";
-        $txt .= "エクスポート日時: {$data['export_info']['exported_at']}\n";
-        $txt .= "会話統計:\n";
-        $txt .= "- 総メッセージ数: {$data['stats']['total_messages']}\n";
-        $txt .= "- ユーザーからのメッセージ: {$data['stats']['user_messages']}\n";
-        $txt .= "- AIからのメッセージ: {$data['stats']['ai_messages']}\n";
-        $txt .= "- 会話期間: {$data['stats']['conversation_duration']} 分\n";
-        $txt .= "\n=== メッセージ履歴 ===\n\n";
+    private function export_to_txt($history) {
+        $txt = "=== AIチャット履歴 ===\n\n";
         
-        foreach ($data['messages'] as $message) {
-            $role = ($message['type'] === 'user') ? '👤 ユーザー' : '🤖 AI';
-            $txt .= "[{$message['timestamp']}] {$role}:\n{$message['message']}\n\n";
+        foreach ($history as $message) {
+            $type = isset($message['type']) ? $message['type'] : 'unknown';
+            $timestamp = isset($message['timestamp']) ? $message['timestamp'] : '';
+            $content = isset($message['message']) ? $message['message'] : '';
+            
+            $txt .= sprintf("[%s] %s:\n%s\n\n", $timestamp, ucfirst($type), $content);
         }
         
         return $txt;
     }
-    
-    /**
-     * セッションIDを取得
-     */
-    private function get_session_id() {
-        if (!isset($_SESSION['ai_chat_session_id'])) {
-            $_SESSION['ai_chat_session_id'] = uniqid('chat_', true);
-        }
-        return $_SESSION['ai_chat_session_id'];
-    }
-    
-    /**
-     * 古い会話履歴をクリーンアップ
-     */
-    private function cleanup_old_conversations() {
-        // セッションデータのクリーンアップ
-        $now = time();
-        foreach ($_SESSION as $key => $value) {
-            if (strpos($key, $this->session_key) === 0) {
-                // タイムアウトチェック（簡易的な実装）
-                if (isset($value['last_activity']) && ($now - $value['last_activity']) > $this->conversation_timeout) {
-                    unset($_SESSION[$key]);
-                }
-            }
-        }
-        
-        // 古いユーザーメタデータのクリーンアップ（オプション）
-        // これは定期的なメンテナンスで実行されることを推奨
-    }
-    
-    /**
-     * プライバシーに基づいてデータを削除
-     */
-    public function delete_user_data($user_id) {
-        delete_user_meta($user_id, 'ai_chat_history');
-        
-        // GDPR対応：削除ログを記録
-        error_log("User {$user_id} chat data deleted for privacy compliance");
-        
-        return true;
-    }
-    
-    /**
-     * チャット履歴が存在するかチェック
-     */
-    public function has_history($user_id = null) {
-        $history = $this->get_history($user_id);
-        return !empty($history);
-    }
-    
-    /**
-     * 最新のメッセージを取得
-     */
-    public function get_latest_message($user_id = null, $type = null) {
-        $history = $this->get_history($user_id);
-        
-        if (empty($history)) {
-            return null;
-        }
-        
-        if ($type === null) {
-            return end($history);
-        }
-        
-        // 指定されたタイプの最新メッセージを取得
-        for ($i = count($history) - 1; $i >= 0; $i--) {
-            if ($history[$i]['type'] === $type) {
-                return $history[$i];
-            }
-        }
-        
-        return null;
-    }
 }
+
+// WordPressフックの登録
+add_action('wp_ajax_ai_chat_cleanup', array('Chat_History', 'cleanup_old_conversations'));
+add_action('wp_ajax_nopriv_ai_chat_cleanup', array('Chat_History', 'cleanup_old_conversations'));

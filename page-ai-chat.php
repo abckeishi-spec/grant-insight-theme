@@ -18,7 +18,7 @@ if (!class_exists('Chat_History')) {
 
 // Gemini API設定
 $gemini_api_key = get_option('gemini_api_key', '');
-$gemini_model = get_option('gemini_model', 'gemini-pro');
+$gemini_model = get_option('gemini_model', 'gemini-1.5-pro');
 
 // チャット履歴管理
 $chat_history = new Chat_History();

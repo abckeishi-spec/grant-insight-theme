@@ -40,7 +40,7 @@ function ai_chatbot_settings_init() {
     register_setting('ai_chatbot_settings_group', 'gemini_model', [
         'type' => 'string',
         'sanitize_callback' => 'sanitize_text_field',
-        'default' => 'gemini-pro'
+        'default' => 'gemini-1.5-pro'
     ]);
     
     register_setting('ai_chatbot_settings_group', 'ai_chatbot_max_history', [
@@ -216,11 +216,12 @@ function gemini_api_key_render() {
  * モデルフィールドレンダリング
  */
 function gemini_model_render() {
-    $model = get_option('gemini_model', 'gemini-pro');
+    $model = get_option('gemini_model', 'gemini-1.5-pro');
     $models = [
-        'gemini-pro' => 'Gemini Pro（推奨）',
-        'gemini-pro-vision' => 'Gemini Pro Vision',
-        'gemini-ultra' => 'Gemini Ultra（実験的）'
+        'gemini-1.5-pro' => 'Gemini 1.5 Pro（推奨 - 最新）',
+        'gemini-1.5-pro-latest' => 'Gemini 1.5 Pro Latest',
+        'gemini-1.0-pro' => 'Gemini 1.0 Pro（旧版）',
+        'gemini-pro' => 'Gemini Pro（レガシー）'
     ];
     ?>
     <select name="gemini_model" id="gemini_model" class="regular-text">

@@ -23,9 +23,9 @@ class Gemini_AI {
     /**
      * コンストラクタ
      */
-    public function __construct($api_key = null, $model = 'gemini-pro') {
+    public function __construct($api_key = null, $model = 'gemini-1.5-pro') {
         $this->api_key = $api_key ?: get_option('gemini_api_key', '');
-        $this->model = $model ?: get_option('gemini_model', 'gemini-pro');
+        $this->model = $model ?: get_option('gemini_model', 'gemini-1.5-pro');
         
         if (empty($this->api_key)) {
             throw new Exception('Gemini APIキーが設定されていません。');
@@ -283,10 +283,13 @@ class Gemini_AI {
     /**
      * APIキーの検証
      */
-    public static function validate_api_key($api_key, $model = 'gemini-pro') {
+    public static function validate_api_key($api_key, $model = 'gemini-1.5-pro') {
         if (empty($api_key)) {
             return new WP_Error('empty_key', 'APIキーが空です。');
         }
+        
+        // デフォルトモデルを最新版に設定
+        $model = $model ?: 'gemini-1.5-pro';
         
         $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$api_key}";
         $data = [
