@@ -1240,12 +1240,12 @@ register_deactivation_hook(__FILE__, 'gi_ajax_deactivation_cleanup');
  */
 function ai_chat_send_message() {
     // セキュリティチェック
-    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'ai_chat_action')) {
+    if (!wp_verify_nonce(isset($_POST['nonce']) ? $_POST['nonce'] : '', 'ai_chat_action')) {
         wp_send_json_error('セキュリティチェックに失敗しました。');
     }
     
     // 入力検証
-    $message = sanitize_text_field($_POST['message'] ?? '');
+    $message = sanitize_text_field(isset($_POST['message']) ? $_POST['message'] : '');
     if (empty($message)) {
         wp_send_json_error('メッセージが空です。');
     }
@@ -1334,7 +1334,7 @@ add_action('wp_ajax_nopriv_ai_chat_send_message', 'ai_chat_send_message');
  */
 function ai_chat_get_history() {
     // セキュリティチェック
-    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'ai_chat_action')) {
+    if (!wp_verify_nonce(isset($_POST['nonce']) ? $_POST['nonce'] : '', 'ai_chat_action')) {
         wp_send_json_error('セキュリティチェックに失敗しました。');
     }
     
@@ -1368,7 +1368,7 @@ add_action('wp_ajax_nopriv_ai_chat_get_history', 'ai_chat_get_history');
  */
 function ai_chat_clear_history() {
     // セキュリティチェック
-    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'ai_chat_action')) {
+    if (!wp_verify_nonce(isset($_POST['nonce']) ? $_POST['nonce'] : '', 'ai_chat_action')) {
         wp_send_json_error('セキュリティチェックに失敗しました。');
     }
     
@@ -1402,7 +1402,7 @@ add_action('wp_ajax_nopriv_ai_chat_clear_history', 'ai_chat_clear_history');
  */
 function ai_chat_validate_settings() {
     // セキュリティチェック
-    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'ai_chat_action')) {
+    if (!wp_verify_nonce(isset($_POST['nonce']) ? $_POST['nonce'] : '', 'ai_chat_action')) {
         wp_send_json_error('セキュリティチェックに失敗しました。');
     }
     

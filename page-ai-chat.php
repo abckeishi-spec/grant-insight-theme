@@ -38,7 +38,7 @@ if ($is_configured) {
     $validation_message = 'Gemini APIキーが設定されていません。';
 }
 
-?}>
+?>
 
 <!DOCTYPE html>
 <html lang="ja">
